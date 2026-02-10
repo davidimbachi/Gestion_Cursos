@@ -1,0 +1,61 @@
+import mongoose from "mongoose";
+
+const { Schema } = mongoose;
+
+const ESTADOS = ["pendiente", "aprobada", "rechazada", "revision"];
+
+const solicitudSchema = new Schema(
+  {
+    oferta: {
+      type: Schema.Types.ObjectId,
+      ref: "Oferta",
+      required: true,
+    },
+
+    coordinador: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
+
+    solicitante: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+
+    estado: {
+      type: String,
+      enum: ESTADOS,
+      default: "revision",
+    },
+
+    funcionario: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
+
+    fechaRevision: {
+      type: Date,
+      default: null,
+    },
+
+    fechaUltimoCambio: {
+      type: Date,
+      default: Date.now,
+    },
+
+    usuarioUltimoCambio: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
+  },
+  {
+    timestamps: {
+      createdAt: "fechaCreacion",
+      updatedAt: false,
+    },
+  }
+);
