@@ -2,6 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import conectarDB from "./config/db.js";
+import usuarioRoutes from "./routes/usuarioRoutes.js";
 
 // Configuración
 dotenv.config();
@@ -17,9 +18,8 @@ app.use(cors());
 app.use(express.json()); // leer JSON
 
 // Routing
-app.get("/", (req, res) => {
-    res.json({ msg: "API funcionando correctamente 🚀" });
-});
+app.use("/api/usuarios", usuarioRoutes);
+
 
 // Puerto
 const PORT = process.env.PORT || 4000;
