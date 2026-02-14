@@ -3,7 +3,7 @@ const router = express.Router();
 
 import {registrar,login,confirmarToken,olvidePassword,nuevoPassword,perfil} from "../controllers/usuarioController.js";
 
-// import checkAuth from "../middleware/checkAuth.js";
+import checkAuth from "../middleware/checkAuth.js";
 
 // Crear usuario
 router.post("/", registrar);
