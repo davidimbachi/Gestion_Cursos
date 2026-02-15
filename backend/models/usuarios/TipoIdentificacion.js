@@ -12,7 +12,6 @@ const TipoIdentificacionSchema = new mongoose.Schema(
   { timestamps: false }
 );
 
-export default mongoose.model(
-  "TipoIdentificacion",
-  TipoIdentificacionSchema
-);
+const TipoIdentificacion = mongoose.model("TipoIdentificacion", TipoIdentificacionSchema);
+
+export default TipoIdentificacion;

@@ -74,3 +74,6 @@ const UsuarioSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+const Usuario = mongoose.model("Usuario", UsuarioSchema);
+
+export default Usuario;

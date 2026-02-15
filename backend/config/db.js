@@ -2,7 +2,7 @@ import mongoose from "mongoose"
 // import 'dotenv/config'
 const conectarDB = async () => {
     try {
-        const connection =await mongoose.connect('mongodb+srv://pacho:root@gestioncursos.wjahq5m.mongodb.net/');
+        const connection =await mongoose.connect('mongodb+srv://pacho:root@gestioncursos.wjahq5m.mongodb.net/?appName=GestionCursos');
             // useNewUrlParser : true,
             // useUnifiestopology:true
         
