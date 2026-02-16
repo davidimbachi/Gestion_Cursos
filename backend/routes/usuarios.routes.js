@@ -1,21 +1,18 @@
-//import express from "express";
+//Encargado de perfil y gestión de usuarios
+
+import express from "express";
 const router = express.Router();
 
-import {registrar,login,confirmarToken,olvidePassword,nuevoPassword,perfil} from "../controllers/usuarioController.js";
+// Importamos funciones del controlador de usuarios
+import { perfil, actualizarPerfil } from "../controllers/usuarioController.js";
 
+// Middleware para proteger rutas privadas
 import checkAuth from "../middleware/checkAuth.js";
 
-// Crear usuario
-router.post("/", registrar);
-// Login
-router.post("/login", login);
-// Confirmar cuenta con token
-router.get("/confirmar/:token", confirmarToken);
-// Olvidé password
-router.post("/olvide-password", olvidePassword);
-// Reset password con token
-router.post("/olvide-password/:token", nuevoPassword);
-// Perfil protegido
+// Ruta para obtener perfil del usuario autenticado
 router.get("/perfil", checkAuth, perfil);
+
+// Ruta para actualizar perfil del usuario autenticado
+router.put("/perfil", checkAuth, actualizarPerfil);
 
 export default router;

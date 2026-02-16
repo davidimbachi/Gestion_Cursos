@@ -3,6 +3,14 @@ import dotenv from "dotenv";
 import cors from "cors";
 import conectarDB from "./config/db.js";
 
+// Importar routers
+import authRoutes from "./routes/auth.routes.js";
+import usuariosRoutes from "./routes/usuarios.routes.js";
+import ofertasRoutes from "./routes/ofertas.routes.js";
+import inscripcionesRoutes from "./routes/inscripciones.routes.js";
+import solicitudesRoutes from "./routes/solicitudes.routes.js";
+
+
 // Configuración
 dotenv.config();
 
@@ -20,6 +28,14 @@ app.use(express.json()); // leer JSON
 app.get("/", (req, res) => {
     res.json({ msg: "API funcionando correctamente 🚀" });
 });
+
+// Montar routers con prefijos
+app.use("/api/auth", authRoutes);
+app.use("/api/usuarios", usuariosRoutes);
+app.use("/api/ofertas", ofertasRoutes);
+app.use("/api/inscripciones", inscripcionesRoutes);
+app.use("/api/solicitudes", solicitudesRoutes);
+
 
 // Puerto
 const PORT = process.env.PORT || 4000;
