@@ -2,7 +2,8 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import conectarDB from "./config/db.js";
-import usuariosRoutes from "./routes/usuariosRoutes.js";
+import ofertasRoutes from "./routes/ofertasRoutes.js";
+
 dotenv.config();
 
 // Crear app
@@ -15,16 +16,13 @@ conectarDB();
 app.use(cors());
 app.use(express.json()); // leer JSON
 
-// Routing
-app.use("/api/usuarios", usuariosRoutes);
+
 
 
 // Montar routers con prefijos
-app.use("/api/auth", authRoutes);
-app.use("/api/usuarios", usuariosRoutes);
+
 app.use("/api/ofertas", ofertasRoutes);
-app.use("/api/inscripciones", inscripcionesRoutes);
-app.use("/api/solicitudes", solicitudesRoutes);
+
 
 
 // Puerto
