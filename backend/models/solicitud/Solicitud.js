@@ -59,3 +59,6 @@ const solicitudSchema = new Schema(
     },
   }
 );
+const Solicitud = mongoose.model("Solicitud", solicitudSchema);
+
+export default Solicitud;
