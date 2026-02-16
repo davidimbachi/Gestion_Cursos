@@ -70,6 +70,52 @@ const confirmarEmail = async (req, res) => {
   res.json({ msg: "Email verificado correctamente" });
 };
 
+// OLVIDÉ PASSWORD
+const olvidePassword = async (req, res) => {
+  const { email } = req.body;
+
+  const usuario = await Usuario.findOne({ email });
+
+  if (!usuario) {
+    return res.status(404).json({ msg: "Usuario no encontrado" });
+  }
+
+  // generar token
+  usuario.token_reset = generarToken();
+  usuario.reset_expires = Date.now() + 1000 * 60 * 15; // 15 minutos
+
+  await usuario.save();
+
+  res.json({
+    msg: "Se ha enviado un token para recuperar tu contraseña",
+    token: usuario.token_reset, // SOLO para pruebas en Postman
+  });
+};
+
+// NUEVO PASSWORD
+const nuevoPassword = async (req, res) => {
+  const { token } = req.params;
+  const { password } = req.body;
+
+  const usuario = await Usuario.findOne({
+    token_reset: token,
+    reset_expires: { $gt: Date.now() },
+  });
+
+  if (!usuario) {
+    return res.status(400).json({ msg: "Token inválido o expirado" });
+  }
+
+  usuario.password = password;
+  usuario.token_reset = null;
+  usuario.reset_expires = null;
+
+  await usuario.save();
+
+  res.json({ msg: "Contraseña actualizada correctamente" });
+};
+
+
 // LOGIN
 const autenticar = async (req, res) => {
   const { email, password } = req.body;
@@ -111,6 +157,8 @@ const autenticar = async (req, res) => {
 export {
   registrar,
   confirmarEmail,
+  olvidePassword,
+    nuevoPassword,
   autenticar,
 };
 
