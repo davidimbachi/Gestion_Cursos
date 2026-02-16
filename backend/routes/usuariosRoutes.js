@@ -1,7 +1,9 @@
 import express from "express";
 const router = express.Router();
 
-import {registrar} from "../controllers/usuarioController.js";
+import {  registrar,
+  confirmarEmail,
+  autenticar,} from "../controllers/usuarioController.js";
 
 // import checkAuth from "../middleware/checkAuth.js";
 
@@ -9,10 +11,10 @@ import {registrar} from "../controllers/usuarioController.js";
 router.post("/", registrar);
 
 // Login
-// router.post("/login", login);
+router.post("/login", autenticar);
 
-// Confirmar cuenta con token
-// router.get("/confirmar/:token", confirmarToken);
+// Confirmar emial 
+router.get("/confirmar/:token", confirmarEmail);
 
 // Olvidé password
 // router.post("/olvide-password", olvidePassword);

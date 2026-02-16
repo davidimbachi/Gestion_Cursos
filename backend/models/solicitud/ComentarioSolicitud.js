@@ -41,7 +41,6 @@ const comentarioSolicitudSchema = new Schema(
   }
 );
 
-export default mongoose.model(
-  "ComentarioSolicitud",
-  comentarioSolicitudSchema
-);
+const ComentarioSolicitud = mongoose.model("ComentarioSolicitud", comentarioSolicitudSchema);
+
+export default ComentarioSolicitud;

@@ -1,32 +1,116 @@
-import Usario from '../models/Usuario.js';
-import generarId from '../helpers/generarId.js';
+import Usuario from "../models/usuarios/Usuario.js";
+import generarJWT from "../helpers/generarJWT.js";
+import generarToken from "../helpers/generarToken.js";
+import SolicitudRol from "../models/solicitud/SolicitudRol.js";
+import Rol from "../models/usuarios/Rol.js";
 
-
+// Registrar nuevo usuario
 const registrar = async (req, res) => {
+  const { email, rol } = req.body;
 
-    const { email } = req.body;
+  const existeUsuario = await Usuario.findOne({ email });
 
-    // Verificar si el usuario ya existe
-    const existeUsuario = await Usario.findOne({ email });
-    if (existeUsuario) {
-        const error = new Error('Usuario ya registrado');
-        return res.status(400).json({ msg: error.message });
+  if (existeUsuario) {
+    return res.status(400).json({ msg: "Usuario ya registrado" });
+  }
+
+  try {
+    const rolSolicitado = await Rol.findOne({ nombre: rol });
+    const rolInvitado = await Rol.findOne({ nombre: "Invitado" });
+
+    if (!rolSolicitado || !rolInvitado) {
+      return res.status(400).json({ msg: "Rol no válido" });
     }
 
-    try {
-        const usuario = new Usario(req.body);
-        
-        // Gnerar un token único para el usuario
-        usuario.token = generarId();
-        // Guardar el usuario en la base de datos
-        await usuario.save();
-        // Enviar un email de confirmación al usuario   
-        res.json({ 
-            msg: 'Usuario registrado correctamente, revisa tu email para confirmar tu cuenta'
-        });
+    const usuario = new Usuario(req.body);
 
-    } catch (error) {
-        console.log(error);
-    }
-}
-export { registrar };
+    usuario.rol = rolInvitado._id;
+    usuario.estado = "pendiente";
+
+    // 🔐 AQUÍ usamos generarToken
+    usuario.token_verificacion = generarToken();
+    usuario.email_verificado = false;
+
+    await usuario.save();
+
+    await SolicitudRol.create({
+      usuario: usuario._id,
+      rolSolicitado: rolSolicitado._id,
+    });
+
+    res.json({
+      msg: "Registro exitoso. Revisa tu correo para verificar tu cuenta.",
+      token: usuario.token_verificacion, // SOLO para pruebas en Postman
+    });
+
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+
+
+// confirmar email
+const confirmarEmail = async (req, res) => {
+  const { token } = req.params;
+
+  const usuario = await Usuario.findOne({
+    token_verificacion: token,
+  });
+
+  if (!usuario) {
+    return res.status(404).json({ msg: "Token inválido" });
+  }
+
+  usuario.email_verificado = true;
+  usuario.token_verificacion = null;
+
+  await usuario.save();
+
+  res.json({ msg: "Email verificado correctamente" });
+};
+
+// LOGIN
+const autenticar = async (req, res) => {
+  const { email, password } = req.body;
+
+  const usuario = await Usuario.findOne({ email }).populate("rol");
+
+  if (!usuario) {
+    return res.status(404).json({ msg: "Usuario no encontrado" });
+  }
+
+  if (!usuario.email_verificado) {
+    return res.status(403).json({
+      msg: "Debes verificar tu email primero",
+    });
+  }
+
+  if (usuario.estado !== "activo") {
+    return res.status(403).json({
+      msg: "Tu cuenta aún no ha sido aprobada por el administrador",
+    });
+  }
+
+  const passwordCorrecto = await usuario.comprobarPassword(password);
+
+  if (!passwordCorrecto) {
+    return res.status(403).json({ msg: "Password incorrecto" });
+  }
+
+  res.json({
+    _id: usuario._id,
+    username: usuario.username,
+    email: usuario.email,
+    rol: usuario.rol.nombre,
+    token: generarJWT(usuario._id),
+  });
+};
+
+
+export {
+  registrar,
+  confirmarEmail,
+  autenticar,
+};
+
