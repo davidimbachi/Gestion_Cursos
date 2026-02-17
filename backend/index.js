@@ -3,6 +3,8 @@ import dotenv from "dotenv";
 import cors from "cors";
 import conectarDB from "./config/db.js";
 import usuariosRoutes from "./routes/usuariosRoutes.js";
+import solicitudesRoutes from "./routes/solicitudesRoutes.js";
+
 dotenv.config();
 
 // Crear app
@@ -17,6 +19,7 @@ app.use(express.json()); // leer JSON
 
 // Routing
 app.use("/api/usuarios", usuariosRoutes);
+app.use("/api/solicitudes", solicitudesRoutes);
 
 
 // Puerto
