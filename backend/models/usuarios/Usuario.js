@@ -61,10 +61,15 @@ const UsuarioSchema = new mongoose.Schema(
       default: false,
     },
 
+    // EMAIL
     token_verificacion: String,
 
+    //  RECUPERAR PASSWORD 
+    token_reset: String,
+    reset_expires: Date,
+
     firma_digital: {
-      type: String, // URL o path
+      type: String,
     },
 
     is_active: {
@@ -74,6 +79,6 @@ const UsuarioSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
-const Usuario = mongoose.model("Usuario", UsuarioSchema);
 
+const Usuario = mongoose.model("Usuario", UsuarioSchema);
 export default Usuario;

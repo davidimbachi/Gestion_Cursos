@@ -71,26 +71,27 @@ const confirmarEmail = async (req, res) => {
 };
 
 // OLVIDÉ PASSWORD
+import crypto from "crypto";
+
 const olvidePassword = async (req, res) => {
   const { email } = req.body;
 
   const usuario = await Usuario.findOne({ email });
-
   if (!usuario) {
-    return res.status(404).json({ msg: "Usuario no encontrado" });
+    return res.status(404).json({ msg: "Usuario no existe" });
   }
 
-  // generar token
-  usuario.token_reset = generarToken();
-  usuario.reset_expires = Date.now() + 1000 * 60 * 15; // 15 minutos
+  usuario.token_reset = crypto.randomBytes(20).toString("hex");
+  usuario.reset_expires = Date.now() + 3600000; // 1 hora
 
   await usuario.save();
 
   res.json({
-    msg: "Se ha enviado un token para recuperar tu contraseña",
-    token: usuario.token_reset, // SOLO para pruebas en Postman
+    msg: "Token generado",
+    token: usuario.token_reset, // solo para Postman
   });
 };
+
 
 // NUEVO PASSWORD
 const nuevoPassword = async (req, res) => {
