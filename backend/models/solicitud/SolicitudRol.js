@@ -1,47 +1,39 @@
 import mongoose from "mongoose";
 
-const { Schema } = mongoose;
-
-const ESTADOS_ROL = ["pendiente", "aprobada", "rechazada"];
-
-const solicitudRolSchema = new Schema(
-  {
-    usuario: {
-      type: Schema.Types.ObjectId,
-      ref: "Usuario",
-      required: true,
-    },
-
-    rolSolicitado: {
-      type: String,
-      required: true,
-    },
-
-    estado: {
-      type: String,
-      enum: ESTADOS_ROL,
-      default: "pendiente",
-    },
-
-    revisadoPor: {
-      type: Schema.Types.ObjectId,
-      ref: "Usuario",
-      default: null,
-    },
-
-    fechaRevision: {
-      type: Date,
-      default: null,
-    },
+const SolicitudRolSchema = new mongoose.Schema({
+  usuario: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Usuario",
+    required: true,
   },
-  {
-    timestamps: {
-      createdAt: "fechaCreacion",
-      updatedAt: false,
-    },
-  }
-);
 
-const SolicitudRol = mongoose.model("SolicitudRol", solicitudRolSchema);
+  rolSolicitado: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Rol",
+    required: true,
+  },
 
-export default SolicitudRol;
+  estado: {
+    type: String,
+    enum: ["pendiente", "aprobada", "rechazada"],
+    default: "pendiente",
+  },
+
+  revisadoPor: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Usuario",
+    default: null,
+  },
+
+  fechaRevision: {
+    type: Date,
+    default: null,
+  },
+
+  fechaCreacion: {
+    type: Date,
+    default: Date.now,
+  },
+});
+
+export default mongoose.model("SolicitudRol", SolicitudRolSchema);
