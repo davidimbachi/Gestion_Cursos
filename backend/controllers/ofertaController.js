@@ -1,13 +1,21 @@
 import Oferta from "../models/ofertas/oferta/oferta.js";
+import { v4 as uuidv4 } from "uuid";
+
 
 // Crear nueva oferta
 const crearOferta = async (req, res) => {
   try {
-    const oferta = new Oferta(req.body);
-    oferta.usuario = req.usuario._id; // usuario autenticado
-    const ofertaGuardada = await oferta.save();
-    res.json(ofertaGuardada);
+    const datos = req.body;
+
+    // Generar un token único automáticamente
+    datos.token_inscripcion = uuidv4();
+
+    const nuevaOferta = new Oferta(datos);
+    await nuevaOferta.save();
+
+    res.json(nuevaOferta);
   } catch (error) {
+    console.error(error);
     res.status(500).json({ msg: "Error al crear la oferta", error });
   }
 };

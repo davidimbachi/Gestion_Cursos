@@ -4,7 +4,7 @@ import cors from "cors";
 import conectarDB from "./config/db.js";
 import ofertasRoutes from "./routes/ofertasRoutes.js";
 import Usuario from "./models/usuarios/usuario.js"; // Importa el modelo Usuario
-
+import Rol from "./models/usuarios/Rol.js";
 dotenv.config();
 
 // Crear app
@@ -19,8 +19,7 @@ app.use(express.json()); // leer JSON
 
 // Middleware para simular usuario con rol
 app.use(async (req, res, next) => {
-  const usuario = await Usuario.findOne({ email: "wendy@gmail.com" }).populate("rol");
-  req.usuario = usuario;
+  const usuario = await Usuario.findOne({ email: "wendy@gmail.com" }).populate("rol");  req.usuario = usuario;
   console.log("Usuario cargado:", req.usuario); // <-- para verificar en consola
   next();
 });

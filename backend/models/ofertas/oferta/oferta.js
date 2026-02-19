@@ -2,51 +2,42 @@ import mongoose from "mongoose";
 
 const OfertaSchema = new mongoose.Schema(
   {
-    usuario: { type: mongoose.Schema.Types.ObjectId, ref: "Usuario" },
+    idFicha: { type: Number, required: true },
+    codigo: { type: String, required: true },
+    cupo: { type: Number, required: true },
 
-    modalidad_oferta: {
-      type: String,
-      enum: ["CAMPESENA", "REGULAR"],
-      default: "REGULAR"
-    },
+    // Fechas y horarios
+    fechaInicio: { type: Date, required: true },
+    fechaFin: { type: Date, required: true },
+    horaInicio: { type: String },
+    horaFin: { type: String },
+    diasFormacion: { type: String },
 
-    tipo_oferta: {
-      type: String,
-      enum: ["ABIERTA", "CERRADA"],
-      default: "ABIERTA"
-    },
+    // Información adicional
+    subsectorEconomico: { type: String },
+    convenio: { type: String },
+    codigoSolicitud: { type: String },
+    enlaceInscripcion: { type: String },
 
-    entorno_geografico: {
-      type: String,
-      enum: ["RURAL", "URBANO"],
-      default: "URBANO"
-    },
+    // Documentos y caracterización
+    firmaDigital: { type: String },
+    fichaCaracterizacion: { type: String },
 
-    programa: { type: mongoose.Schema.Types.ObjectId, ref: "ProgramaFormacion" },
-    modalidad_programa: { type: mongoose.Schema.Types.ObjectId, ref: "ModalidadPrograma" },
-    lugar: { type: mongoose.Schema.Types.ObjectId, ref: "Lugar" },
+    // Ubicación y relaciones
+    departamento: { type: String },
+    municipio: { type: mongoose.Schema.Types.ObjectId, ref: "Municipio" },
+    programaFormacion: { type: mongoose.Schema.Types.ObjectId, ref: "ProgramaFormacion" },
+    modalidad: { type: mongoose.Schema.Types.ObjectId, ref: "Modalidad" },
+    centro: { type: mongoose.Schema.Types.ObjectId, ref: "Centro" },
+    estado: { type: mongoose.Schema.Types.ObjectId, ref: "Estado" },
+    ambiente: { type: mongoose.Schema.Types.ObjectId, ref: "Ambiente" },
 
-    estado_enviada: Boolean,
-    cupo: Number,
+    // Relación con programas especiales y solicitantes
+    programaEspecial: { type: mongoose.Schema.Types.ObjectId, ref: "ProgramaEspecial" },
+    empresaSolicitante: { type: mongoose.Schema.Types.ObjectId, ref: "EmpresaSolicitante" },
 
-    empresa_solicitante: { type: mongoose.Schema.Types.ObjectId, ref: "EmpresaSolicitante" },
-    programa_especial: { type: mongoose.Schema.Types.ObjectId, ref: "ProgramaEspecial" },
-
-    ficha: String,
-    codigo_de_solicitud: String,
-
-    fecha_inicio: Date,
-    fecha_terminacion: Date,
-    fecha_de_inscripcion: Date,
-
-    caracterizacion_generada: String,
-    carta_solicitud: String,
-    masivo_aprendices: String,
-
-    archivos_aprendices: String,
-
-    token_inscripcion: { type: String, unique: true },
-    link_generado: Boolean
+    // Instructor que crea la oferta
+    instructor: { type: mongoose.Schema.Types.ObjectId, ref: "Usuario", required: true }
   },
   { timestamps: true }
 );
