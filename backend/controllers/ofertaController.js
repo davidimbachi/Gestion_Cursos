@@ -22,17 +22,19 @@ const crearOferta = async (req, res) => {
   }
 };
 
-// Listar todas las ofertas
 const listarOfertas = async (req, res) => {
   try {
     const ofertas = await Oferta.find()
-      .populate("usuario", "nombre email") // traer info del usuario
-      .populate("programa")
+      .populate("usuario", "nombre email")  
+      .populate("programa")       
       .populate("modalidad_programa")
-      .populate("lugar");
+      .populate("lugar")
+      .populate("empresa_solicitante")
+      .populate("programa_especial");
+    
     res.json(ofertas);
   } catch (error) {
-    res.status(500).json({ msg: "Error al listar las ofertas", error });
+    res.status(500).json({ msg: "Error al listar las ofertas", error: error.message });
   }
 };
 

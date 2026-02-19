@@ -3,8 +3,15 @@ import dotenv from "dotenv";
 import cors from "cors";
 import conectarDB from "./config/db.js";
 import ofertasRoutes from "./routes/ofertasRoutes.js";
-import Usuario from "./models/usuarios/usuario.js"; // Importa el modelo Usuario
+import Usuario from "./models/usuarios/usuario.js"; 
 import Rol from "./models/usuarios/Rol.js";
+import ProgramaFormacion from "./models/ofertas/academico/ProgramaFormacion.js";
+import ModalidadPrograma from "./models/ofertas/oferta/ModalidadPrograma.js";
+import Lugar from "./models/ofertas/ubicacion/Lugar.js";
+import EmpresaSolicitante from "./models/ofertas/oferta/EmpresaSolicitante.js";
+import ProgramaEspecial from "./models/ofertas/oferta/ProgramaEspecial.js";
+
+
 dotenv.config();
 
 // Crear app
