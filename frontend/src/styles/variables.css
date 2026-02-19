@@ -1,0 +1,46 @@
+:root {
+    /* Colores institucionales SENA 2025 */
+    --color-primary: #003366;        /* Azul SENA - Principal */
+    --color-primary-hover: #002244;   /* Azul SENA - Hover */
+    --color-secondary: #FCD116;       /* Amarillo SENA - Secundario */
+    --color-secondary-hover: #E5B800; /* Amarillo SENA - Hover */
+    --color-accent: #CE1126;          /* Rojo SENA - Acentos */
+    --color-accent-hover: #A50D1F;    /* Rojo SENA - Hover */
+    
+    /* Colores de fondo y texto */
+    --color-light: #ECF0F1;
+    --color-background: #F1F5F9;
+    --color-white: #FFFFFF;
+    --color-text-main: #0F172A;
+    --color-text-secondary: #64748B;
+    --color-muted: #94A3B8;
+    
+    /* Bordes y sombras */
+    --color-border: #CBD5E1;
+    --color-shadow: rgba(0, 0, 0, 0.05);
+    --color-link: #003366;            /* Azul SENA para links */
+    
+    /* Fuentes */
+    --font-main: 'Segoe UI', sans-serif;
+    
+    /* Medidas */
+    --header-height: 70px;
+    --padding-base: 12px;
+    --padding-lg: 32px;
+    --radius: 8px;
+    --radius-lg: 16px;
+    --shadow: 0 4px 16px var(--color-shadow);
+    
+    /* Colores para alertas */
+    --color-success: #27AE60;         /* Verde éxito */
+    --color-success-hover: #1E8449;
+    
+    --color-info: #003366;            /* Azul SENA para info */
+    --color-info-hover: #002244;
+    
+    --color-warning: #FCD116;         /* Amarillo SENA para warning */
+    --color-warning-hover: #E5B800;
+    
+    --color-error: #CE1126;           /* Rojo SENA para error */
+    --color-error-hover: #A50D1F;
+}
