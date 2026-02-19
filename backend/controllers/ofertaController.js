@@ -11,6 +11,8 @@ const crearOferta = async (req, res) => {
     datos.token_inscripcion = uuidv4();
 
     const nuevaOferta = new Oferta(datos);
+    console.log("ANTES DE GUARDAR:", datos);
+
     await nuevaOferta.save();
 
     res.json(nuevaOferta);
