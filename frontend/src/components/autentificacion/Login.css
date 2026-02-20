@@ -1,0 +1,491 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+
+/* ─────────────────────────────────────────
+   VARIABLES SENA 2025
+───────────────────────────────────────── */
+:root {
+  --color-primary:        #003366;
+  --color-primary-hover:  #002244;
+  --color-secondary:      #FCD116;
+  --color-secondary-hover:#E5B800;
+  --color-accent:         #CE1126;
+  --color-accent-hover:   #A50D1F;
+
+  --color-background:     #F1F5F9;
+  --color-white:          #FFFFFF;
+  --color-text-main:      #0F172A;
+  --color-text-secondary: #64748B;
+  --color-muted:          #94A3B8;
+  --color-border:         #CBD5E1;
+
+  --color-success:        #27AE60;
+  --color-error:          #CE1126;
+
+  --font-main:            'Plus Jakarta Sans', 'Segoe UI', sans-serif;
+  --radius:               8px;
+  --radius-lg:            16px;
+}
+
+/* ─────────────────────────────────────────
+   RESET
+───────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ─────────────────────────────────────────
+   WRAPPER GENERAL
+───────────────────────────────────────── */
+.auth-wrap {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: linear-gradient(135deg, #F1F5F9 0%, #E8EFF7 50%, #DDE6F0 100%);
+  font-family: var(--font-main);
+}
+
+/* ─────────────────────────────────────────
+   CARD (contenedor de dos columnas)
+───────────────────────────────────────── */
+.auth-card {
+  width: 100%;
+  max-width: 920px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: var(--color-white);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow:
+    0 24px 80px rgba(0, 51, 102, 0.14),
+    0 4px 16px rgba(0, 0, 0, 0.06);
+  animation: cardIn 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.auth-card.wide {
+  max-width: 960px;
+}
+
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(18px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0)    scale(1);    }
+}
+
+/* ─────────────────────────────────────────
+   PANEL IZQUIERDO
+───────────────────────────────────────── */
+.auth-left {
+  padding: 44px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+}
+
+.auth-left.scrollable {
+  overflow-y: auto;
+  max-height: 90vh;
+}
+
+/* ─────────────────────────────────────────
+   LOGO
+───────────────────────────────────────── */
+.auth-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-text-main);
+  letter-spacing: -0.3px;
+}
+
+.auth-logo-icon {
+  width: 36px;
+  height: 36px;
+  background: var(--color-secondary);
+  border-radius: var(--radius);
+  display: grid;
+  place-items: center;
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+/* ─────────────────────────────────────────
+   TÍTULOS
+───────────────────────────────────────── */
+.auth-heading h2 {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--color-text-main);
+  line-height: 1.2;
+  margin-bottom: 6px;
+}
+
+.auth-heading p {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+/* ─────────────────────────────────────────
+   FORMULARIO
+───────────────────────────────────────── */
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-field label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-main);
+}
+
+/* ─────────────────────────────────────────
+   INPUT WRAP
+───────────────────────────────────────── */
+.input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  background: #F8FAFC;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+}
+
+.input-wrap:focus-within {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(0, 51, 102, 0.1);
+  background: var(--color-white);
+}
+
+.input-wrap svg {
+  color: var(--color-muted);
+  flex-shrink: 0;
+}
+
+.input-wrap input,
+.input-wrap select {
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: var(--font-main);
+  font-size: 14px;
+  color: var(--color-text-main);
+  width: 100%;
+}
+
+.input-wrap input::placeholder {
+  color: var(--color-muted);
+}
+
+.input-wrap select {
+  cursor: pointer;
+}
+
+/* ─────────────────────────────────────────
+   BOTÓN PRINCIPAL
+───────────────────────────────────────── */
+.btn-primary {
+  padding: 13px;
+  background: var(--color-primary);
+  color: var(--color-white);
+  border: none;
+  border-radius: var(--radius);
+  font-family: var(--font-main);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+  box-shadow: 0 4px 14px rgba(0, 51, 102, 0.28);
+  letter-spacing: 0.01em;
+}
+
+.btn-primary:hover {
+  background: var(--color-primary-hover);
+  box-shadow: 0 6px 20px rgba(0, 51, 102, 0.38);
+}
+
+.btn-primary:active  { transform: scale(0.98); }
+.btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+/* ─────────────────────────────────────────
+   LINKS
+───────────────────────────────────────── */
+.forgot-link {
+  text-align: right;
+  font-size: 13px;
+  color: var(--color-primary);
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.forgot-link:hover { text-decoration: underline; }
+
+.auth-alt-link {
+  text-align: center;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+.auth-alt-link span {
+  color: var(--color-primary);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.auth-alt-link span:hover { text-decoration: underline; }
+
+/* ─────────────────────────────────────────
+   ALERTAS
+───────────────────────────────────────── */
+.auth-alert {
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.auth-alert.error {
+  background: #FEF2F2;
+  color: var(--color-error);
+  border: 1px solid #FECACA;
+}
+
+.auth-alert.success {
+  background: #F0FDF4;
+  color: var(--color-success);
+  border: 1px solid #BBF7D0;
+}
+
+/* ─────────────────────────────────────────
+   RADIO GROUP (tipo de programa)
+───────────────────────────────────────── */
+.radio-group {
+  display: flex;
+  gap: 10px;
+}
+
+.radio-opt {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-main);
+  background: #F8FAFC;
+  transition: border-color 0.2s, background 0.2s, color 0.2s;
+  user-select: none;
+}
+
+.radio-opt.active {
+  border-color: var(--color-primary);
+  background: rgba(0, 51, 102, 0.05);
+  color: var(--color-primary);
+}
+
+.radio-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid var(--color-border);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  transition: border-color 0.2s;
+}
+
+.radio-opt.active .radio-dot { border-color: var(--color-primary); }
+
+.radio-dot::after {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.radio-opt.active .radio-dot::after { opacity: 1; }
+
+/* ─────────────────────────────────────────
+   BADGE CAMPESENA
+───────────────────────────────────────── */
+.badge-sena {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 700;
+  background: var(--color-secondary);
+  color: var(--color-primary);
+  margin-left: 4px;
+}
+
+/* ─────────────────────────────────────────
+   INPUT FILE
+───────────────────────────────────────── */
+.file-input {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  padding: 8px 0;
+  cursor: pointer;
+}
+
+/* ─────────────────────────────────────────
+   PANEL DERECHO
+───────────────────────────────────────── */
+.auth-right {
+  background: linear-gradient(145deg, #003366 0%, #004999 55%, #0066CC 100%);
+  padding: 44px 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 22px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Círculos decorativos */
+.auth-right::before {
+  content: '';
+  position: absolute;
+  width: 300px; height: 300px;
+  background: rgba(252, 209, 22, 0.06);
+  border-radius: 50%;
+  top: -80px; right: -80px;
+  pointer-events: none;
+}
+
+.auth-right::after {
+  content: '';
+  position: absolute;
+  width: 200px; height: 200px;
+  background: rgba(206, 17, 38, 0.05);
+  border-radius: 50%;
+  bottom: -60px; left: -40px;
+  pointer-events: none;
+}
+
+/* Franja bicolor superior */
+.auth-right-stripe {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 5px;
+  background: linear-gradient(90deg,
+    #FCD116 0%, #FCD116 50%,
+    #CE1126 50%, #CE1126 100%
+  );
+}
+
+/* Brand SENA */
+.auth-right-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: relative;
+  z-index: 1;
+}
+
+.auth-right-badge {
+  width: 32px; height: 32px;
+  background: var(--color-secondary);
+  border-radius: 6px;
+  display: grid;
+  place-items: center;
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.auth-right-brand span {
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.auth-right-title {
+  font-size: 26px;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1.25;
+  position: relative;
+  z-index: 1;
+}
+
+.auth-right-sub {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.72);
+  line-height: 1.6;
+  position: relative;
+  z-index: 1;
+}
+
+.auth-right-features {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  position: relative;
+  z-index: 1;
+}
+
+.auth-right-feature-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 12px;
+  padding: 13px 16px;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.auth-right-feature-icon {
+  width: 36px; height: 36px;
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 9px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  color: #ffffff;
+}
+
+/* ─────────────────────────────────────────
+   RESPONSIVE
+───────────────────────────────────────── */
+@media (max-width: 680px) {
+  .auth-card { grid-template-columns: 1fr; }
+  .auth-right { display: none; }
+  .form-grid-2 { grid-template-columns: 1fr; }
+}

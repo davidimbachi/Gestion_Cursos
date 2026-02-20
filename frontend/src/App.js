@@ -1,8 +1,13 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route,Navigate  } from 'react-router-dom';
 import MainLayout from './components/layouts/MainLayout';
 import OfertasList from './components/OfertasList';
 import CrearOferta from './components/ofertas/CrearOferta';
+
+// ── Auth ──────────────────────────────────────────
+import Login          from './components/autentificacion/Login';
+import Register       from './components/autentificacion/Register';
+import ForgotPassword from './components/autentificacion/ForgotPassword';
 
 const menusPorRol = {
   SuperAdmin: [
@@ -82,9 +87,18 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={
-          <MainLayout 
-            user={usuarioData} 
+         {/* ── Rutas públicas (sin MainLayout) ── */}
+        <Route path="/login"    element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/forgot"   element={<ForgotPassword />} />
+
+        {/* Redirige la raíz al login */}
+        <Route path="/" element={<Navigate to="/login" replace />} />
+
+        {/* ── Rutas privadas (con MainLayout) ── */}
+        <Route path="/inicio" element={
+          <MainLayout
+            user={usuarioData}
             grupoNombre={usuarioData.rol}
             sidebarMenus={menuCompleto}
           >
