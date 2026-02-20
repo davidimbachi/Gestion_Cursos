@@ -21,7 +21,6 @@ const CrearOferta = () => {
   const [exito, setExito]         = useState(false);
   const [errores, setErrores]     = useState({});
 
-  // ── Tab Programa ──────────────────────────────────────────────────────────
   const [duracion, setDuracion]                         = useState('');
   const [programas, setProgramas]                       = useState([]);
   const [programaSeleccionado, setProgramaSeleccionado] = useState('');
@@ -30,7 +29,6 @@ const CrearOferta = () => {
   const [modalidades, setModalidades]                   = useState([]);
   const [modalidadPrograma, setModalidadPrograma]       = useState('');
 
-  // ── Tab Oferta ────────────────────────────────────────────────────────────
   const [modalidadOferta, setModalidadOferta]       = useState('REGULAR');
   const [tipoOferta, setTipoOferta]                 = useState('ABIERTA');
   const [cupo, setCupo]                             = useState(25);
@@ -42,12 +40,10 @@ const CrearOferta = () => {
   const [programasEspeciales, setProgramasEspeciales] = useState([]);
   const [programaEspecial, setProgramaEspecial]     = useState('');
 
-  // ── Tab Empresa ───────────────────────────────────────────────────────────
   const [empresas, setEmpresas]                       = useState([]);
   const [busquedaEmpresa, setBusquedaEmpresa]         = useState('');
   const [empresaSeleccionada, setEmpresaSeleccionada] = useState('');
 
-  // ── Tab Ubicación ─────────────────────────────────────────────────────────
   const [departamentos, setDepartamentos] = useState([]);
   const [departamento, setDepartamento]   = useState('');
   const [municipios, setMunicipios]       = useState([]);
@@ -55,12 +51,8 @@ const CrearOferta = () => {
   const [ambiente, setAmbiente]           = useState('');
   const [direccion, setDireccion]         = useState('');
 
-  // ── Tab Horario ───────────────────────────────────────────────────────────
   const [horarios, setHorarios] = useState([]);
 
-  // ── Carga de datos ────────────────────────────────────────────────────────
-
-  // Buscar programas por texto y duración
   useEffect(() => {
     if (!duracion) { setProgramas([]); return; }
     if (!busquedaPrograma || busquedaPrograma.length < 2) { setProgramas([]); return; }
@@ -71,65 +63,43 @@ const CrearOferta = () => {
       .finally(() => setCargandoProgs(false));
   }, [duracion, busquedaPrograma]);
 
-  // Modalidades de programa
   useEffect(() => {
-    axios.get(`${API}/catalogos/modalidades`)
-      .then(r => setModalidades(r.data))
-      .catch(console.error);
+    axios.get(`${API}/catalogos/modalidades`).then(r => setModalidades(r.data)).catch(console.error);
   }, []);
 
-  // Programas especiales
   useEffect(() => {
-    axios.get(`${API}/catalogos/programas-especiales`)
-      .then(r => setProgramasEspeciales(r.data))
-      .catch(console.error);
+    axios.get(`${API}/catalogos/programas-especiales`).then(r => setProgramasEspeciales(r.data)).catch(console.error);
   }, []);
 
-  // Empresas (con búsqueda)
   useEffect(() => {
-    axios.get(`${API}/empresas${busquedaEmpresa ? `?q=${busquedaEmpresa}` : ''}`)
-      .then(r => setEmpresas(r.data))
-      .catch(console.error);
+    axios.get(`${API}/empresas${busquedaEmpresa ? `?q=${busquedaEmpresa}` : ''}`).then(r => setEmpresas(r.data)).catch(console.error);
   }, [busquedaEmpresa]);
 
-  // Departamentos
   useEffect(() => {
-    axios.get(`${API}/ubicacion/departamentos`)
-      .then(r => setDepartamentos(r.data))
-      .catch(console.error);
+    axios.get(`${API}/ubicacion/departamentos`).then(r => setDepartamentos(r.data)).catch(console.error);
   }, []);
 
-  // Municipios según departamento
   useEffect(() => {
     if (!departamento) { setMunicipios([]); setMunicipio(''); return; }
-    axios.get(`${API}/ubicacion/municipios?departamento=${departamento}`)
-      .then(r => setMunicipios(r.data))
-      .catch(console.error);
+    axios.get(`${API}/ubicacion/municipios?departamento=${departamento}`).then(r => setMunicipios(r.data)).catch(console.error);
   }, [departamento]);
 
-  // ── Helpers ───────────────────────────────────────────────────────────────
   const tabIndex = tabsConfig.findIndex(t => t.key === tabActiva);
-  const progreso = Math.round(((tabIndex + 1) / tabsConfig.length) * 100);
   const irTab = (dir) => {
     const idx = tabIndex + dir;
     if (idx >= 0 && idx < tabsConfig.length) setTabActiva(tabsConfig[idx].key);
   };
 
-  // ── Horarios ──────────────────────────────────────────────────────────────
   const toggleDia = (dia) => {
     const existe = horarios.find(h => h.dia === dia);
-    if (existe) {
-      setHorarios(horarios.filter(h => h.dia !== dia));
-    } else {
-      setHorarios([...horarios, { dia, hora_inicio: '07:00', hora_fin: '09:00' }]);
-    }
+    if (existe) setHorarios(horarios.filter(h => h.dia !== dia));
+    else setHorarios([...horarios, { dia, hora_inicio: '07:00', hora_fin: '09:00' }]);
   };
 
   const actualizarHorario = (dia, campo, valor) => {
     setHorarios(horarios.map(h => h.dia === dia ? { ...h, [campo]: valor } : h));
   };
 
-  // ── Submit ────────────────────────────────────────────────────────────────
   const handleSubmit = async () => {
     const errs = {};
     if (!programaSeleccionado)   errs.programa         = 'Selecciona un programa';
@@ -149,10 +119,7 @@ const CrearOferta = () => {
 
     setEnviando(true);
     try {
-      const lugarRes = await axios.post(`${API}/ubicacion/lugares`, {
-        departamento, municipio, ambiente, direccion,
-      });
-
+      const lugarRes = await axios.post(`${API}/ubicacion/lugares`, { departamento, municipio, ambiente, direccion });
       await axios.post(`${API}/ofertas`, {
         programa: programaSeleccionado,
         modalidad_programa: modalidadPrograma || undefined,
@@ -168,7 +135,6 @@ const CrearOferta = () => {
         programa_especial: programaEspecial || undefined,
         lugar: lugarRes.data._id,
       });
-
       setExito(true);
     } catch (err) {
       console.error(err);
@@ -189,48 +155,57 @@ const CrearOferta = () => {
     setHorarios([]); setErrores({});
   };
 
-  // ── Pantalla de éxito ─────────────────────────────────────────────────────
   if (exito) return (
     <div className="dashboard-content">
       <div className="oferta-page">
         <div className="oferta__card oferta__exito">
           <i className="fas fa-check-circle"></i>
           <h2>¡Oferta creada correctamente!</h2>
-          <button className="btn btn--primary" onClick={resetForm}>
-            Crear otra oferta
-          </button>
+          <button className="btn btn--primary" onClick={resetForm}>Crear otra oferta</button>
         </div>
       </div>
     </div>
   );
 
-  // ── Render ────────────────────────────────────────────────────────────────
   return (
     <div className="dashboard-content">
       <div className="oferta-page">
         <div className="oferta__card">
 
-          {/* Tabs */}
+          {/* ── STEPPER ── */}
           <div className="oferta__header">
-            <div className="oferta__tabs">
-              {tabsConfig.map(t => (
-                <div
-                  key={t.key}
-                  className={`oferta__tab ${tabActiva === t.key ? 'active' : ''}`}
-                  onClick={() => setTabActiva(t.key)}
-                >
-                  <i className={`fas ${t.icon}`}></i> {t.label}
-                </div>
-              ))}
-            </div>
-            <div className="oferta__progress">
-              <div className="oferta__progress-bar" style={{ width: `${progreso}%` }}></div>
+            <div className="oferta__stepper">
+              {tabsConfig.map((t, i) => {
+                const isCompleted = i < tabIndex;
+                const isActive    = i === tabIndex;
+                return (
+                  <React.Fragment key={t.key}>
+                    <div
+                      className={`stepper__step ${isActive ? 'active' : ''} ${isCompleted ? 'completed' : ''}`}
+                      onClick={() => setTabActiva(t.key)}
+                    >
+                      <div className="stepper__circle">
+                        {isCompleted
+                          ? <i className="fas fa-check"></i>
+                          : <span>{i + 1}</span>
+                        }
+                      </div>
+                      <span className="stepper__label">{t.label}</span>
+                    </div>
+
+                    {/* línea conectora entre pasos */}
+                    {i < tabsConfig.length - 1 && (
+                      <div className={`stepper__line ${isCompleted ? 'completed' : ''}`} />
+                    )}
+                  </React.Fragment>
+                );
+              })}
             </div>
           </div>
 
           <div className="oferta__content">
 
-            {/* ══ PROGRAMA ══════════════════════════════════════════════════ */}
+            {/* ══ PROGRAMA ══ */}
             {tabActiva === 'programa' && (
               <div className="form-section active">
                 <h2 className="form-section__title">
@@ -243,12 +218,7 @@ const CrearOferta = () => {
                     <select
                       className="form__select"
                       value={duracion}
-                      onChange={e => {
-                        setDuracion(e.target.value);
-                        setProgramaSeleccionado('');
-                        setBusquedaPrograma('');
-                        setProgramas([]);
-                      }}
+                      onChange={e => { setDuracion(e.target.value); setProgramaSeleccionado(''); setBusquedaPrograma(''); setProgramas([]); }}
                     >
                       <option value="">Selecciona duración</option>
                       {DURACIONES.map(d => <option key={d} value={d}>{d} horas</option>)}
@@ -263,10 +233,7 @@ const CrearOferta = () => {
                         className={`form__input ${errores.programa ? 'error' : ''}`}
                         placeholder="Escribe para buscar programa..."
                         value={busquedaPrograma}
-                        onChange={e => {
-                          setBusquedaPrograma(e.target.value);
-                          setProgramaSeleccionado('');
-                        }}
+                        onChange={e => { setBusquedaPrograma(e.target.value); setProgramaSeleccionado(''); }}
                       />
                       {cargandoProgs && <span className="field-hint">Buscando...</span>}
                       {programas.length > 0 && !programaSeleccionado && (
@@ -275,11 +242,7 @@ const CrearOferta = () => {
                             <div
                               key={p._id}
                               className="programa__item"
-                              onClick={() => {
-                                setProgramaSeleccionado(p._id);
-                                setBusquedaPrograma(`${p.nombre} ${p.codigo ? `(${p.codigo})` : ''} — ${p.duracion}h`);
-                                setProgramas([]);
-                              }}
+                              onClick={() => { setProgramaSeleccionado(p._id); setBusquedaPrograma(`${p.nombre} ${p.codigo ? `(${p.codigo})` : ''} — ${p.duracion}h`); setProgramas([]); }}
                             >
                               {p.nombre} {p.codigo ? `(${p.codigo})` : ''} — {p.duracion}h
                             </div>
@@ -292,15 +255,9 @@ const CrearOferta = () => {
 
                   <div className="form-group">
                     <label>Modalidad del programa</label>
-                    <select
-                      className="form__select"
-                      value={modalidadPrograma}
-                      onChange={e => setModalidadPrograma(e.target.value)}
-                    >
+                    <select className="form__select" value={modalidadPrograma} onChange={e => setModalidadPrograma(e.target.value)}>
                       <option value="">Selecciona modalidad</option>
-                      {modalidades.map(m => (
-                        <option key={m._id} value={m._id}>{m.nombre}</option>
-                      ))}
+                      {modalidades.map(m => <option key={m._id} value={m._id}>{m.nombre}</option>)}
                     </select>
                   </div>
 
@@ -308,7 +265,7 @@ const CrearOferta = () => {
               </div>
             )}
 
-            {/* ══ OFERTA ════════════════════════════════════════════════════ */}
+            {/* ══ OFERTA ══ */}
             {tabActiva === 'oferta' && (
               <div className="form-section active">
                 <h2 className="form-section__title">
@@ -339,12 +296,7 @@ const CrearOferta = () => {
 
                   <div className="form-group">
                     <label className="required">Fecha de inicio</label>
-                    <input
-                      type="date"
-                      className={`form__input ${errores.fechaInicio ? 'error' : ''}`}
-                      value={fechaInicio}
-                      onChange={e => setFechaInicio(e.target.value)}
-                    />
+                    <input type="date" className={`form__input ${errores.fechaInicio ? 'error' : ''}`} value={fechaInicio} onChange={e => setFechaInicio(e.target.value)} />
                     {errores.fechaInicio && <span className="field-error">{errores.fechaInicio}</span>}
                   </div>
 
@@ -355,12 +307,7 @@ const CrearOferta = () => {
 
                   <div className="form-group">
                     <label className="required">Fecha de inscripción</label>
-                    <input
-                      type="date"
-                      className={`form__input ${errores.fechaInscripcion ? 'error' : ''}`}
-                      value={fechaInscripcion}
-                      onChange={e => setFechaInscripcion(e.target.value)}
-                    />
+                    <input type="date" className={`form__input ${errores.fechaInscripcion ? 'error' : ''}`} value={fechaInscripcion} onChange={e => setFechaInscripcion(e.target.value)} />
                     {errores.fechaInscripcion && <span className="field-error">{errores.fechaInscripcion}</span>}
                   </div>
 
@@ -378,9 +325,7 @@ const CrearOferta = () => {
                     <label>Programa especial</label>
                     <select className="form__select" value={programaEspecial} onChange={e => setProgramaEspecial(e.target.value)}>
                       <option value="">Ninguno</option>
-                      {programasEspeciales.map(p => (
-                        <option key={p._id} value={p._id}>{p.nombre}</option>
-                      ))}
+                      {programasEspeciales.map(p => <option key={p._id} value={p._id}>{p.nombre}</option>)}
                     </select>
                   </div>
 
@@ -388,7 +333,7 @@ const CrearOferta = () => {
               </div>
             )}
 
-            {/* ══ EMPRESA ═══════════════════════════════════════════════════ */}
+            {/* ══ EMPRESA ══ */}
             {tabActiva === 'empresa' && (
               <div className="form-section active">
                 <h2 className="form-section__title">
@@ -398,28 +343,14 @@ const CrearOferta = () => {
 
                   <div className="form-group form-group--full">
                     <label>Buscar empresa por nombre</label>
-                    <input
-                      type="text"
-                      className="form__input"
-                      placeholder="Escribe el nombre..."
-                      value={busquedaEmpresa}
-                      onChange={e => setBusquedaEmpresa(e.target.value)}
-                    />
+                    <input type="text" className="form__input" placeholder="Escribe el nombre..." value={busquedaEmpresa} onChange={e => setBusquedaEmpresa(e.target.value)} />
                   </div>
 
                   <div className="form-group form-group--full">
                     <label>Empresa solicitante <span className="field-hint">(opcional para ofertas abiertas)</span></label>
-                    <select
-                      className="form__select"
-                      value={empresaSeleccionada}
-                      onChange={e => setEmpresaSeleccionada(e.target.value)}
-                    >
+                    <select className="form__select" value={empresaSeleccionada} onChange={e => setEmpresaSeleccionada(e.target.value)}>
                       <option value="">Sin empresa</option>
-                      {empresas.map(e => (
-                        <option key={e._id} value={e._id}>
-                          {e.nombre} {e.nit ? `— NIT: ${e.nit}` : ''}
-                        </option>
-                      ))}
+                      {empresas.map(e => <option key={e._id} value={e._id}>{e.nombre} {e.nit ? `— NIT: ${e.nit}` : ''}</option>)}
                     </select>
                   </div>
 
@@ -427,7 +358,7 @@ const CrearOferta = () => {
               </div>
             )}
 
-            {/* ══ UBICACIÓN ═════════════════════════════════════════════════ */}
+            {/* ══ UBICACIÓN ══ */}
             {tabActiva === 'ubicacion' && (
               <div className="form-section active">
                 <h2 className="form-section__title">
@@ -437,11 +368,7 @@ const CrearOferta = () => {
 
                   <div className="form-group">
                     <label className="required">Departamento</label>
-                    <select
-                      className={`form__select ${errores.departamento ? 'error' : ''}`}
-                      value={departamento}
-                      onChange={e => { setDepartamento(e.target.value); setMunicipio(''); }}
-                    >
+                    <select className={`form__select ${errores.departamento ? 'error' : ''}`} value={departamento} onChange={e => { setDepartamento(e.target.value); setMunicipio(''); }}>
                       <option value="">Selecciona departamento</option>
                       {departamentos.map(d => <option key={d._id} value={d._id}>{d.nombre}</option>)}
                     </select>
@@ -450,12 +377,7 @@ const CrearOferta = () => {
 
                   <div className="form-group">
                     <label className="required">Municipio</label>
-                    <select
-                      className={`form__select ${errores.municipio ? 'error' : ''}`}
-                      value={municipio}
-                      onChange={e => setMunicipio(e.target.value)}
-                      disabled={!departamento}
-                    >
+                    <select className={`form__select ${errores.municipio ? 'error' : ''}`} value={municipio} onChange={e => setMunicipio(e.target.value)} disabled={!departamento}>
                       <option value="">Selecciona municipio</option>
                       {municipios.map(m => <option key={m._id} value={m._id}>{m.nombre}</option>)}
                     </select>
@@ -464,24 +386,12 @@ const CrearOferta = () => {
 
                   <div className="form-group">
                     <label>Ambiente / Instalación</label>
-                    <input
-                      type="text"
-                      className="form__input"
-                      placeholder="Ej: Aula 201, Taller mecánico..."
-                      value={ambiente}
-                      onChange={e => setAmbiente(e.target.value)}
-                    />
+                    <input type="text" className="form__input" placeholder="Ej: Aula 201, Taller mecánico..." value={ambiente} onChange={e => setAmbiente(e.target.value)} />
                   </div>
 
                   <div className="form-group form-group--full">
                     <label className="required">Dirección</label>
-                    <input
-                      type="text"
-                      className={`form__input ${errores.direccion ? 'error' : ''}`}
-                      placeholder="Calle, carrera, barrio..."
-                      value={direccion}
-                      onChange={e => setDireccion(e.target.value)}
-                    />
+                    <input type="text" className={`form__input ${errores.direccion ? 'error' : ''}`} placeholder="Calle, carrera, barrio..." value={direccion} onChange={e => setDireccion(e.target.value)} />
                     {errores.direccion && <span className="field-error">{errores.direccion}</span>}
                   </div>
 
@@ -489,7 +399,7 @@ const CrearOferta = () => {
               </div>
             )}
 
-            {/* ══ HORARIO ═══════════════════════════════════════════════════ */}
+            {/* ══ HORARIO ══ */}
             {tabActiva === 'horario' && (
               <div className="form-section active">
                 <h2 className="form-section__title">
@@ -510,21 +420,11 @@ const CrearOferta = () => {
                           <div className="horario__dia-body">
                             <div className="form-group">
                               <label>Hora inicio</label>
-                              <input
-                                type="time"
-                                className="form__input"
-                                value={h.hora_inicio}
-                                onChange={e => actualizarHorario(dia, 'hora_inicio', e.target.value)}
-                              />
+                              <input type="time" className="form__input" value={h.hora_inicio} onChange={e => actualizarHorario(dia, 'hora_inicio', e.target.value)} />
                             </div>
                             <div className="form-group">
                               <label>Hora fin</label>
-                              <input
-                                type="time"
-                                className="form__input"
-                                value={h.hora_fin}
-                                onChange={e => actualizarHorario(dia, 'hora_fin', e.target.value)}
-                              />
+                              <input type="time" className="form__input" value={h.hora_fin} onChange={e => actualizarHorario(dia, 'hora_fin', e.target.value)} />
                             </div>
                           </div>
                         )}
@@ -550,11 +450,7 @@ const CrearOferta = () => {
 
           {/* Footer */}
           <div className="oferta__footer">
-            <button
-              className="btn btn--secondary"
-              onClick={() => irTab(-1)}
-              disabled={tabIndex === 0}
-            >
+            <button className="btn btn--secondary" onClick={() => irTab(-1)} disabled={tabIndex === 0}>
               <i className="fas fa-arrow-left"></i> Anterior
             </button>
 

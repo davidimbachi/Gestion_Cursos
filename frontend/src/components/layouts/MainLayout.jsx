@@ -86,7 +86,8 @@ const MainLayout = ({ children, user = null, grupoNombre = '', sidebarMenus = []
       <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
       <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
       
-      <body className="body">
+      {/* CAMBIADO: body por div.app-container */}
+      <div className="app-container">
         {/* Sidebar */}
         <aside className="sidebar">
           <div className="sidebar__logo">
@@ -113,7 +114,7 @@ const MainLayout = ({ children, user = null, grupoNombre = '', sidebarMenus = []
           </nav>
         </aside>
 
-        {/* Header - FUERA del dashboard */}
+        {/* Header */}
         <div className="header">
           <div className="search-bar">
             <i className="fas fa-search"></i>
@@ -133,7 +134,7 @@ const MainLayout = ({ children, user = null, grupoNombre = '', sidebarMenus = []
           </div>
         </div>
 
-        {/* Dashboard (sin header) */}
+        {/* Dashboard */}
         <div className="dashboard">
           {/* Contenido principal */}
           {children}
@@ -174,7 +175,7 @@ const MainLayout = ({ children, user = null, grupoNombre = '', sidebarMenus = []
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
-      </body>
+      </div> {/* Cierra app-container */}
     </>
   );
 };
