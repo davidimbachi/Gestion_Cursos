@@ -1,5 +1,5 @@
-/* BODY */
-body.body {
+/* ===== CONTENEDOR PRINCIPAL (cambiado de body.body a .app-container) ===== */
+.app-container {
     font-family: var(--font-main);
     background-color: var(--color-background);
     margin: 0;
@@ -7,6 +7,12 @@ body.body {
     min-height: 100vh;
     overflow-y: auto;
     position: relative;
+}
+
+/* Body real - solo para reset */
+body {
+    margin: 0;
+    padding: 0;
 }
 
 /* ===== SIDEBAR MEJORADA ===== */
