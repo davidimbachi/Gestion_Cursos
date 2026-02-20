@@ -21,4 +21,4 @@ const ProgramaFormacionSchema = new mongoose.Schema({
   red_conocimiento: { type: mongoose.Schema.Types.ObjectId, ref: "RedConocimientos" }
 });
 
-export default mongoose.model("ProgramaFormacion", ProgramaFormacionSchema);
+export default mongoose.model("ProgramaFormacion", ProgramaFormacionSchema, "programa_formacion");
