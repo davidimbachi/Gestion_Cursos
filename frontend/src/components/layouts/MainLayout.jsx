@@ -113,7 +113,7 @@ const MainLayout = ({ children, user = null, grupoNombre = '', sidebarMenus = []
           </nav>
         </aside>
 
-        {/* Header - FUERA del dashboard */}
+        {/* Header*/}
         <div className="header">
           <div className="search-bar">
             <i className="fas fa-search"></i>
