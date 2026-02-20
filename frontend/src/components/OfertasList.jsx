@@ -45,11 +45,6 @@ const OfertasList = () => {
     return new Date(fecha).toLocaleDateString('es-CO');
   };
 
-  // Calcular estadísticas
-  const totalCupos = ofertas.reduce((sum, oferta) => sum + (oferta.cupo || 0), 0);
-  const ofertasEnviadas = ofertas.filter(o => o.estado_enviada).length;
-  const ofertasBorrador = ofertas.filter(o => !o.estado_enviada).length;
-
   if (cargando) {
     return (
       <div className="dashboard-content" style={{ textAlign: 'center', padding: '50px' }}>
@@ -75,14 +70,14 @@ const OfertasList = () => {
 
   return (
     <div className="dashboard-content" style={{ padding: '0', maxWidth: '100%' }}>
-      {/* Header con estadísticas */}
+      {/* Header simplificado - Solo título y total */}
       <div style={{ 
         background: 'linear-gradient(135deg, #0a3274 0%, #1e40af 100%)',
         padding: '30px',
         color: 'white',
         boxShadow: '0 4px 20px rgba(10, 50, 116, 0.3)'
       }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
             <h2 style={{ margin: 0, fontSize: '28px', fontWeight: '600' }}>
               <i className="fas fa-briefcase me-2"></i>Ofertas de Formación
@@ -101,63 +96,10 @@ const OfertasList = () => {
             <div style={{ fontSize: '36px', fontWeight: 'bold' }}>{ofertas.length}</div>
           </div>
         </div>
-
-        {/* Tarjetas de estadísticas */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px' }}>
-          <div style={{ 
-            background: 'rgba(255,255,255,0.15)', 
-            padding: '20px', 
-            borderRadius: '10px',
-            backdropFilter: 'blur(10px)'
-          }}>
-            <div style={{ fontSize: '12px', opacity: 0.9, marginBottom: '8px' }}>
-              <i className="fas fa-users me-2"></i>Total Cupos
-            </div>
-            <div style={{ fontSize: '32px', fontWeight: 'bold' }}>{totalCupos}</div>
-          </div>
-          
-          <div style={{ 
-            background: 'rgba(16, 185, 129, 0.3)', 
-            padding: '20px', 
-            borderRadius: '10px',
-            backdropFilter: 'blur(10px)'
-          }}>
-            <div style={{ fontSize: '12px', marginBottom: '8px' }}>
-              <i className="fas fa-check-circle me-2"></i>Enviadas
-            </div>
-            <div style={{ fontSize: '32px', fontWeight: 'bold' }}>{ofertasEnviadas}</div>
-          </div>
-          
-          <div style={{ 
-            background: 'rgba(245, 158, 11, 0.3)', 
-            padding: '20px', 
-            borderRadius: '10px',
-            backdropFilter: 'blur(10px)'
-          }}>
-            <div style={{ fontSize: '12px', marginBottom: '8px' }}>
-              <i className="fas fa-clock me-2"></i>Borrador
-            </div>
-            <div style={{ fontSize: '32px', fontWeight: 'bold' }}>{ofertasBorrador}</div>
-          </div>
-          
-          <div style={{ 
-            background: 'rgba(99, 102, 241, 0.3)', 
-            padding: '20px', 
-            borderRadius: '10px',
-            backdropFilter: 'blur(10px)'
-          }}>
-            <div style={{ fontSize: '12px', marginBottom: '8px' }}>
-              <i className="fas fa-percentage me-2"></i>% Enviadas
-            </div>
-            <div style={{ fontSize: '32px', fontWeight: 'bold' }}>
-              {ofertas.length > 0 ? Math.round((ofertasEnviadas / ofertas.length) * 100) : 0}%
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* Contenido principal - Vista dividida */}
-      <div style={{ display: 'flex', height: 'calc(100vh - 350px)', minHeight: '500px' }}>
+      <div style={{ display: 'flex', height: 'calc(100vh - 180px)', minHeight: '500px' }}>
         
         {/* Lista de ofertas - 40% del ancho */}
         <div style={{ 
