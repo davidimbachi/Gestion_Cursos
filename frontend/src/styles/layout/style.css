@@ -13,7 +13,7 @@ body.body {
 .sidebar {
     background-color: var(--color-primary);
     color: var(--color-white);
-    width: 240px;
+    width: 200px;
     padding: 32px 16px;
     display: flex;
     flex-direction: column;
@@ -78,7 +78,7 @@ body.body {
     background-color: rgba(255, 255, 255, 0.1);
 }
 
-/* HEADER - Ahora independiente */
+/* HEADER */
 .header {
     height: var(--header-height);
     background: var(--color-white);
@@ -89,8 +89,7 @@ body.body {
     padding: 0 20px;
     position: fixed;
     top: 0;
-    left: 240px;
-    /* Mismo ancho que el sidebar */
+    left: 200px;
     right: 0;
     z-index: 150;
 }
@@ -100,11 +99,42 @@ body.body {
     flex: 1;
     display: flex;
     flex-direction: column;
-    padding: 24px 40px;
-    margin-left: 240px;
+    margin-left: 200px;
     margin-top: var(--header-height);
-    /* Altura del header */
     min-height: calc(100vh - var(--header-height));
+    background: var(--color-background);
+    width: calc(100% - 200px);
+}
+
+/* CONTENIDO DEL DASHBOARD */
+.dashboard-content {
+    flex: 1;
+    padding: 30px;
+    background: var(--color-background);
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Estilos para el formulario dentro del dashboard */
+.dashboard-content form {
+    max-width: 800px;
+    margin: 0 auto;
+    background: var(--color-white);
+    padding: 30px;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+}
+
+.dashboard-content h2 {
+    margin-top: 0;
+    margin-bottom: 30px;
+    color: var(--color-text-main);
+    font-size: 1.8rem;
+    border-bottom: 2px solid var(--color-secondary);
+    padding-bottom: 10px;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 /* SEARCH BAR Y USUARIO */
@@ -158,12 +188,6 @@ body.body {
     font-weight: bold;
 }
 
-/* CONTENIDO DEL DASHBOARD */
-.dashboard-content {
-    flex: 1;
-    background: transparent;
-}
-
 /* ===== SISTEMA DE MENSAJES ===== */
 #notification-container {
     position: fixed;
@@ -187,7 +211,6 @@ body.body {
         transform: translateX(100%);
         opacity: 0;
     }
-
     to {
         transform: translateX(0);
         opacity: 1;
@@ -260,7 +283,7 @@ body.body {
     width: 100%;
     height: auto;
     border-radius: var(--radius);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     border: 1px solid var(--color-border);
 }
 
@@ -317,6 +340,14 @@ body.body {
 
     .dashboard {
         margin-left: 80px;
+        width: calc(100% - 80px);
+    }
+
+    .dashboard-content {
+        padding: 20px;
+    }
+
+    .dashboard-content form {
         padding: 20px;
     }
 

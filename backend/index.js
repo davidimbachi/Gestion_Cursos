@@ -3,40 +3,37 @@ import dotenv from "dotenv";
 import cors from "cors";
 import conectarDB from "./config/db.js";
 import ofertasRoutes from "./routes/ofertasRoutes.js";
-import Usuario from "./models/usuarios/usuario.js"; 
-import Rol from "./models/usuarios/Rol.js";
-import ProgramaFormacion from "./models/ofertas/academico/ProgramaFormacion.js";
-import ModalidadPrograma from "./models/ofertas/oferta/ModalidadPrograma.js";
-import Lugar from "./models/ofertas/ubicacion/Lugar.js";
-import EmpresaSolicitante from "./models/ofertas/oferta/EmpresaSolicitante.js";
-import ProgramaEspecial from "./models/ofertas/oferta/ProgramaEspecial.js";
-
+import programaRoutes from "./routes/programaRoutes.js";
+import ubicacionRoutes from "./routes/ubicacionRoutes.js";
+import empresaRoutes from "./routes/empresaRoutes.js";
+import catalogosRoutes from "./routes/catalogosRoutes.js";
+import Usuario from "./models/usuarios/usuario.js";
 
 dotenv.config();
 
-// Crear app
 const app = express();
 
-// Conectar DB
 conectarDB();
 
-// Middlewares globales
 app.use(cors());
-app.use(express.json()); // leer JSON
+app.use(express.json());
 
 // Middleware para simular usuario con rol
+
 app.use(async (req, res, next) => {
-  const usuario = await Usuario.findOne({ email: "wendy@gmail.com" }).populate("rol");  req.usuario = usuario;
-  console.log("Usuario cargado:", req.usuario); // <-- para verificar en consola
+  const usuario = await Usuario.findOne({ email: "wendy@gmail.com" });
+  req.usuario = usuario;
   next();
 });
 
-// Montar routers con prefijos
-app.use("/api/ofertas", ofertasRoutes);
+// Rutas
+app.use("/api/ofertas",    ofertasRoutes);
+app.use("/api/programas",  programaRoutes);
+app.use("/api/ubicacion",  ubicacionRoutes);
+app.use("/api/empresas",   empresaRoutes);
+app.use("/api/catalogos",  catalogosRoutes);
 
-// Puerto
 const PORT = process.env.PORT || 4000;
-// Arrancar servidor
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en el puerto ${PORT}`);
 });
