@@ -20,6 +20,7 @@ app.use(express.json()); // leer JSON
 // Routing
 app.use("/api/usuarios", usuariosRoutes);
 app.use("/api/solicitudes", solicitudesRoutes);
+app.use("/uploads", express.static("uploads")); // Servir archivos estáticos
 
 
 // Puerto

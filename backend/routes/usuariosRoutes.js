@@ -6,12 +6,12 @@
     olvidePassword,
     nuevoPassword,
     autenticar,} from "../controllers/usuarioController.js";
+    import uploadFirma from "../middlewares/uploadFirma.js";
 
   // import checkAuth from "../middleware/checkAuth.js";
 
   // Crear usuario
-  router.post("/", registrar);
-
+router.post("/registro", uploadFirma.single("firma_digital"), registrar);
   // Login
   router.post("/login", autenticar);
 

@@ -59,6 +59,10 @@ const UsuarioSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+      coordinador: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Usuario",
+  },
   },
   { timestamps: true }
 );
