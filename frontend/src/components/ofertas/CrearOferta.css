@@ -550,3 +550,10 @@
     grid-template-columns: 1fr;
   }
 }
+
+.form__input[readonly] {
+  background: var(--color-light);
+  color: var(--color-text-secondary);
+  cursor: not-allowed;
+  border-color: var(--color-border);
+}

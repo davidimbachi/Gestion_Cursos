@@ -37,6 +37,7 @@ const CrearOferta = () => {
   const [codigoSolicitud, setCodigoSolicitud]       = useState('');
   const [programasEspeciales, setProgramasEspeciales] = useState([]);
   const [programaEspecial, setProgramaEspecial]     = useState('');
+  const [programaInfo, setProgramaInfo] = useState(null);
 
   const [empresas, setEmpresas]                       = useState([]);
   const [busquedaEmpresa, setBusquedaEmpresa]         = useState('');
@@ -235,9 +236,14 @@ const CrearOferta = () => {
                             <div
                               key={p._id}
                               className="programa__item"
-                              onClick={() => { setProgramaSeleccionado(p._id); setBusquedaPrograma(`${p.nombre} ${p.codigo ? `(${p.codigo})` : ''} — ${p.duracion}h`); setProgramas([]); }}
+                              onClick={() => { 
+                                  setProgramaSeleccionado(p._id); 
+                                  setProgramaInfo(p);              
+                                  setBusquedaPrograma(`${p.nombre}`); 
+                                  setProgramas([]);
+                                }}
                             >
-                              {p.nombre} {p.codigo ? `(${p.codigo})` : ''} — {p.duracion}h
+                              {p.nombre} 
                             </div>
                           ))}
                         </div>
@@ -246,13 +252,22 @@ const CrearOferta = () => {
                     </div>
                   )}
 
-                  {/* <div className="form-group">
-                    <label>Modalidad del programa</label>
-                    <select className="form__select" value={modalidadPrograma} onChange={e => setModalidadPrograma(e.target.value)}>
-                      <option value="">Selecciona modalidad</option>
-                      {modalidades.map(m => <option key={m._id} value={m._id}>{m.nombre}</option>)}
-                    </select>
-                  </div> */}
+                  {programaInfo && (
+                    <div className="form-section__grid" style={{ marginTop: '16px' }}>
+                      <div className="form-group">
+                        <label>Código- Versión</label>
+                        <input type="text" className="form__input" value={`${programaInfo.codigo}- ${programaInfo.version}`} readOnly />
+                      </div>
+                      <div className="form-group">
+                        <label>Estado</label>
+                        <input type="text" className="form__input" value={programaInfo.estado} readOnly />
+                      </div>
+                      <div className="form-group">
+                        <label>Duración</label>
+                        <input type="text" className="form__input" value={programaInfo.duracion}  readOnly />
+                      </div>
+                    </div>
+                  )}
 
                 </div>
               </div>
