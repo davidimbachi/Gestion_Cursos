@@ -26,8 +26,6 @@ const CrearOferta = () => {
   const [programaSeleccionado, setProgramaSeleccionado] = useState('');
   const [busquedaPrograma, setBusquedaPrograma]         = useState('');
   const [cargandoProgs, setCargandoProgs]               = useState(false);
-  const [modalidades, setModalidades]                   = useState([]);
-  const [modalidadPrograma, setModalidadPrograma]       = useState('');
 
   const [modalidadOferta, setModalidadOferta]       = useState('REGULAR');
   const [tipoOferta, setTipoOferta]                 = useState('ABIERTA');
@@ -62,10 +60,6 @@ const CrearOferta = () => {
       .catch(console.error)
       .finally(() => setCargandoProgs(false));
   }, [duracion, busquedaPrograma]);
-
-  useEffect(() => {
-    axios.get(`${API}/catalogos/modalidades`).then(r => setModalidades(r.data)).catch(console.error);
-  }, []);
 
   useEffect(() => {
     axios.get(`${API}/catalogos/programas-especiales`).then(r => setProgramasEspeciales(r.data)).catch(console.error);
@@ -122,7 +116,6 @@ const CrearOferta = () => {
       const lugarRes = await axios.post(`${API}/ubicacion/lugares`, { departamento, municipio, ambiente, direccion });
       await axios.post(`${API}/ofertas`, {
         programa: programaSeleccionado,
-        modalidad_programa: modalidadPrograma || undefined,
         modalidad_oferta: modalidadOferta,
         tipo_oferta: tipoOferta,
         cupo,
@@ -147,7 +140,7 @@ const CrearOferta = () => {
   const resetForm = () => {
     setExito(false); setTabActiva('programa');
     setDuracion(''); setProgramaSeleccionado(''); setBusquedaPrograma('');
-    setModalidadPrograma(''); setModalidadOferta('REGULAR'); setTipoOferta('ABIERTA');
+    setModalidadOferta('REGULAR'); setTipoOferta('ABIERTA');
     setCupo(25); setFechaInicio(''); setFechaTerminacion(''); setFechaInscripcion('');
     setCodigoFicha(''); setCodigoSolicitud(''); setProgramaEspecial('');
     setEmpresaSeleccionada(''); setBusquedaEmpresa('');
@@ -253,13 +246,13 @@ const CrearOferta = () => {
                     </div>
                   )}
 
-                  <div className="form-group">
+                  {/* <div className="form-group">
                     <label>Modalidad del programa</label>
                     <select className="form__select" value={modalidadPrograma} onChange={e => setModalidadPrograma(e.target.value)}>
                       <option value="">Selecciona modalidad</option>
                       {modalidades.map(m => <option key={m._id} value={m._id}>{m.nombre}</option>)}
                     </select>
-                  </div>
+                  </div> */}
 
                 </div>
               </div>
