@@ -8,6 +8,8 @@ import ubicacionRoutes from "./routes/ubicacionRoutes.js";
 import empresaRoutes from "./routes/empresaRoutes.js";
 import catalogosRoutes from "./routes/catalogosRoutes.js";
 import Usuario from "./models/usuarios/usuario.js";
+import usuariosRoutes from "./routes/usuariosRoutes.js";
+import solicitudesRoutes from "./routes/solicitudesRoutes.js";
 
 dotenv.config();
 
@@ -19,6 +21,10 @@ app.use(cors());
 app.use(express.json());
 
 // Middleware para simular usuario con rol
+// Routing
+app.use("/api/usuarios", usuariosRoutes);
+app.use("/api/solicitudes", solicitudesRoutes);
+app.use("/uploads", express.static("uploads")); // Servir archivos estáticos
 
 app.use(async (req, res, next) => {
   const usuario = await Usuario.findOne({ email: "wendy@gmail.com" });

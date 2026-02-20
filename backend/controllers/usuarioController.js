@@ -6,33 +6,75 @@ import Rol from "../models/usuarios/Rol.js";
 
 // Registrar nuevo usuario
 const registrar = async (req, res) => {
-  const { email, rol } = req.body;
-
-  const existeUsuario = await Usuario.findOne({ email });
-
-  if (existeUsuario) {
-    return res.status(400).json({ msg: "Usuario ya registrado" });
-  }
-
   try {
+    const {
+      username,
+      email,
+      password,
+      confirmPassword,
+      first_name,
+      last_name,
+      telefono,
+      tipo_identificacion,
+      numero_identificacion,
+      rol,
+      coordinador,
+      firma_digital,
+    } = req.body;
+
+    // ✅ Validar contraseñas
+    if (password !== confirmPassword) {
+      return res.status(400).json({
+        msg: "Las contraseñas no coinciden",
+      });
+    }
+
+    // ✅ Verificar si ya existe email
+    const existeUsuario = await Usuario.findOne({ email });
+
+    if (existeUsuario) {
+      return res.status(400).json({
+        msg: "Usuario ya registrado",
+      });
+    }
+
+    // ✅ Buscar roles
     const rolSolicitado = await Rol.findOne({ nombre: rol });
     const rolInvitado = await Rol.findOne({ nombre: "Invitado" });
 
     if (!rolSolicitado || !rolInvitado) {
-      return res.status(400).json({ msg: "Rol no válido" });
+      return res.status(400).json({
+        msg: "Rol no válido",
+      });
     }
 
-    const usuario = new Usuario(req.body);
+    // ✅ Validar coordinador si es Instructor
+    if (rol === "Instructor" && !coordinador) {
+      return res.status(400).json({
+        msg: "Debes seleccionar un coordinador",
+      });
+    }
 
-    usuario.rol = rolInvitado._id;
-    usuario.estado = "pendiente";
-
-    // 🔐 AQUÍ usamos generarToken
-    usuario.token_verificacion = generarToken();
-    usuario.email_verificado = false;
+    //  Crear usuario
+    const usuario = new Usuario({
+    username,
+    email,
+    password,
+    first_name,
+    last_name,
+    telefono,
+    tipo_identificacion,
+    numero_identificacion,
+    firma_digital: req.file ? req.file.filename : null,
+    coordinador: rol === "Instructor" ? coordinador : null,
+    rol: rolInvitado._id,
+    email_verificado: false,
+    token_verificacion: generarToken(),
+  });
 
     await usuario.save();
 
+    // ✅ Crear solicitud de rol
     await SolicitudRol.create({
       usuario: usuario._id,
       rolSolicitado: rolSolicitado._id,
@@ -40,15 +82,14 @@ const registrar = async (req, res) => {
 
     res.json({
       msg: "Registro exitoso. Revisa tu correo para verificar tu cuenta.",
-      token: usuario.token_verificacion, // SOLO para pruebas en Postman
+      token: usuario.token_verificacion,
     });
 
   } catch (error) {
     console.log(error);
+    res.status(500).json({ msg: "Error en el servidor" });
   }
 };
-
-
 
 // confirmar email
 const confirmarEmail = async (req, res) => {
@@ -133,10 +174,10 @@ const autenticar = async (req, res) => {
     });
   }
 
-  if (usuario.estado !== "activo") {
-    return res.status(403).json({
-      msg: "Tu cuenta aún no ha sido aprobada por el administrador",
-    });
+  if (!usuario.is_active) {
+  return res.status(403).json({
+    msg: "Tu cuenta está desactivada por el administrador",
+  });
   }
 
   const passwordCorrecto = await usuario.comprobarPassword(password);
