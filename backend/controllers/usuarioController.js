@@ -133,10 +133,10 @@ const autenticar = async (req, res) => {
     });
   }
 
-  if (usuario.estado !== "activo") {
-    return res.status(403).json({
-      msg: "Tu cuenta aún no ha sido aprobada por el administrador",
-    });
+  if (!usuario.is_active) {
+  return res.status(403).json({
+    msg: "Tu cuenta está desactivada por el administrador",
+  });
   }
 
   const passwordCorrecto = await usuario.comprobarPassword(password);
