@@ -22,19 +22,66 @@ const crearOferta = async (req, res) => {
   }
 };
 
+
+// Listar ofertas-----
 const listarOfertas = async (req, res) => {
   try {
     const ofertas = await Oferta.find()
-      .populate("usuario", "nombre email")  
-      .populate("programa")       
-      .populate("modalidad_programa")
-      .populate("lugar")
-      .populate("empresa_solicitante")
-      .populate("programa_especial");
+      // Usuario
+      .populate("usuario", "nombre email username")  
+      
+      // Programa con sus referencias
+      .populate({
+        path: "programa",
+        select: "codigo nombre version duracion",
+        populate: [
+          { path: "nivel_formacion", select: "nombre" },
+          { path: "linea_tecnologica", select: "nombre" },
+          { path: "red_conocimiento", select: "nombre" }
+        ]
+      })
+
+      // Modalidad del programa
+      .populate("modalidad_programa", "nombre")
+      
+      // LUGAR - Con departamento, municipio y corregimiento (UNIFICADO)
+      .populate({
+        path: "lugar",
+        select: "ambiente direccion",
+        populate: [
+          { 
+            path: "departamento", 
+            select: "nombre",
+            model: "Departamento"
+          },
+          { 
+            path: "municipio", 
+            select: "nombre",
+            model: "Municipio"
+          },
+          { 
+            path: "corregimiento", 
+            select: "nombre",
+            model: "Corregimiento"
+          }
+        ]
+      })
+      
+      // Empresa solicitante
+      .populate("empresa_solicitante", "nombre nit ciudad")
+      
+      // Programa especial
+      .populate("programa_especial", "nombre");
+    
+    // Log para verificar que los datos llegan bien
+    console.log('📍 Ubicación (ejemplo):', JSON.stringify(ofertas[0]?.lugar, null, 2));
     
     res.json(ofertas);
   } catch (error) {
-    res.status(500).json({ msg: "Error al listar las ofertas", error: error.message });
+    res.status(500).json({ 
+      msg: "Error al listar las ofertas", 
+      error: error.message 
+    });
   }
 };
 
