@@ -22,3 +22,4 @@ const ProgramaFormacionSchema = new mongoose.Schema({
 });
 
 export default mongoose.model("ProgramaFormacion", ProgramaFormacionSchema, "programa_formacion");
+

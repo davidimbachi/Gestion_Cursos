@@ -2,19 +2,9 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import MainLayout from './components/layouts/MainLayout';
 import OfertasList from './components/OfertasList';
+import CrearOferta from './components/ofertas/CrearOferta';
 
-const menuBase = [
-  {
-    category: "Configuración",
-    links: [
-      { url: "/ayuda", icon: "fas fa-question-circle", label: "Ayuda" },
-      { url: "/logout", icon: "fas fa-sign-out-alt", label: "Cerrar Sesión" }
-    ]
-  }
-];
-
-// Menús específicos por rol
-const menusEspecificos = {
+const menusPorRol = {
   SuperAdmin: [
     {
       category: "Francisco",
@@ -65,21 +55,28 @@ const menusEspecificos = {
   ]
 };
 
-// Función para combinar menús específicos + base
+const menuBase = [
+  {
+    category: "Configuración",
+    links: [
+      { url: "/ayuda", icon: "fas fa-question-circle", label: "Ayuda" },
+      { url: "/logout", icon: "fas fa-sign-out-alt", label: "Cerrar Sesión" }
+    ]
+  }
+];
+
 const obtenerMenuCompleto = (rol) => {
-  const especifico = menusEspecificos[rol] || menusEspecificos.Instructor;
+  const especifico = menusPorRol[rol] || menusPorRol.Instructor;
   return [...especifico, ...menuBase];
 };
 
-// ===== DATOS DEL USUARIO (quemados por ahora) =====
 const usuarioData = {
   first_name: 'Wendy',
   last_name: 'García',
-  rol: 'Instructor'  // Cambia aquí para probar: 'SuperAdmin', 'Instructor', 'Funcionario', 'Coordinador'
+  rol: 'Instructor'
 };
 
 function App() {
-  // Obtener el menú completo según el rol del usuario
   const menuCompleto = obtenerMenuCompleto(usuarioData.rol);
 
   return (
@@ -111,77 +108,7 @@ function App() {
             grupoNombre={usuarioData.rol}
             sidebarMenus={menuCompleto}
           >
-            <h2>Crear Oferta</h2>
-          </MainLayout>
-        }/>
-
-        <Route path="/solicitudes" element={
-          <MainLayout 
-            user={usuarioData} 
-            grupoNombre={usuarioData.rol}
-            sidebarMenus={menuCompleto}
-          >
-            <h2>Solicitudes</h2>
-          </MainLayout>
-        }/>
-
-        <Route path="/usuarios" element={
-          <MainLayout 
-            user={usuarioData} 
-            grupoNombre={usuarioData.rol}
-            sidebarMenus={menuCompleto}
-          >
-            <h2>Usuarios</h2>
-          </MainLayout>
-        }/>
-
-        <Route path="/programas" element={
-          <MainLayout 
-            user={usuarioData} 
-            grupoNombre={usuarioData.rol}
-            sidebarMenus={menuCompleto}
-          >
-            <h2>Programas</h2>
-          </MainLayout>
-        }/>
-
-        <Route path="/reportes" element={
-          <MainLayout 
-            user={usuarioData} 
-            grupoNombre={usuarioData.rol}
-            sidebarMenus={menuCompleto}
-          >
-            <h2>Reportes</h2>
-          </MainLayout>
-        }/>
-
-        <Route path="/instructores" element={
-          <MainLayout 
-            user={usuarioData} 
-            grupoNombre={usuarioData.rol}
-            sidebarMenus={menuCompleto}
-          >
-            <h2>Instructores</h2>
-          </MainLayout>
-        }/>
-
-        <Route path="/ayuda" element={
-          <MainLayout 
-            user={usuarioData} 
-            grupoNombre={usuarioData.rol}
-            sidebarMenus={menuCompleto}
-          >
-            <h2>Ayuda</h2>
-          </MainLayout>
-        }/>
-
-        <Route path="/logout" element={
-          <MainLayout 
-            user={usuarioData} 
-            grupoNombre={usuarioData.rol}
-            sidebarMenus={menuCompleto}
-          >
-            <h2>Cerrando sesión...</h2>
+            <CrearOferta />
           </MainLayout>
         }/>
       </Routes>
