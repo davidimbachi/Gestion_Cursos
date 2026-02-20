@@ -7,7 +7,7 @@ import programaRoutes from "./routes/programaRoutes.js";
 import ubicacionRoutes from "./routes/ubicacionRoutes.js";
 import empresaRoutes from "./routes/empresaRoutes.js";
 import catalogosRoutes from "./routes/catalogosRoutes.js";
-import Usuario from "./models/usuarios/usuario.js";
+import Usuario from "./models/usuarios/Usuario.js";
 import usuariosRoutes from "./routes/usuariosRoutes.js";
 import solicitudesRoutes from "./routes/solicitudesRoutes.js";
 

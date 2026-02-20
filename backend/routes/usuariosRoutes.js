@@ -6,7 +6,7 @@
     olvidePassword,
     nuevoPassword,
     autenticar,} from "../controllers/usuarioController.js";
-    import uploadFirma from "../middlewares/uploadFirma.js";
+    import uploadFirma from "../middleware/uploadFirma.js";
 
   // import checkAuth from "../middleware/checkAuth.js";
 
