@@ -85,21 +85,41 @@ const listarOfertas = async (req, res) => {
   }
 };
 
-// Actualizar oferta
-const actualizarOferta = async (req, res) => {
+// actilaiza oferta
+export const actualizarOferta = async (req, res) => {
   try {
-    const oferta = await Oferta.findById(req.params.id);
+    const oferta = await Oferta.findById(req.params.id).populate('programa');
+    
     if (!oferta) {
       return res.status(404).json({ msg: "Oferta no encontrada" });
     }
 
-    // Actualizar con los datos enviados
-    Object.assign(oferta, req.body);
+    const camposActualizables = {
+      codigo_ficha: req.body.codigo_ficha,
+      cupo: req.body.cupo,
+      fecha_inicio: req.body.fecha_inicio,
+      fecha_inscripcion: req.body.fecha_inscripcion,
+      fecha_terminacion: req.body.fecha_terminacion,
+      modalidad_oferta: req.body.modalidad_oferta,
+      tipo_oferta: req.body.tipo_oferta,
+      estado_enviada: req.body.estado_enviada,
+    };
+
+    // Solo actualizar si el campo existe en req.body
+    Object.keys(camposActualizables).forEach(key => {
+      if (camposActualizables[key] !== undefined) {
+        oferta[key] = camposActualizables[key];
+      }
+    });
+    
     const ofertaActualizada = await oferta.save();
+    await ofertaActualizada.populate('programa');
     res.json(ofertaActualizada);
+    
   } catch (error) {
+    console.error('Error en actualizarOferta:', error);
     res.status(500).json({ msg: "Error al actualizar la oferta", error });
   }
 };
 
-export { crearOferta, listarOfertas, actualizarOferta };
+export { crearOferta, listarOfertas };

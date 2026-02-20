@@ -6,6 +6,10 @@ const OfertasList = () => {
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
   const [ofertaSeleccionada, setOfertaSeleccionada] = useState(null);
+  const [modoEdicion, setModoEdicion] = useState(false);
+  const [ofertaEditando, setOfertaEditando] = useState(null);
+  const [formData, setFormData] = useState({});
+  const [guardando, setGuardando] = useState(false);
 
   useEffect(() => {
     cargarOfertas();
@@ -43,6 +47,103 @@ const OfertasList = () => {
   const formatearFechaCorta = (fecha) => {
     if (!fecha) return '';
     return new Date(fecha).toLocaleDateString('es-CO');
+  };
+
+  // === FUNCIONES DE EDICIÓN ===
+const abrirEdicion = (oferta) => {
+  console.log('🔵 [abrirEdicion] Abriendo modal para oferta:', oferta._id);
+  setOfertaEditando(oferta);
+  setFormData({
+    codigo_ficha: oferta.codigo_ficha || '',
+    cupo: oferta.cupo || '',
+    fecha_inicio: oferta.fecha_inicio ? new Date(oferta.fecha_inicio).toISOString().split('T')[0] : '',
+    fecha_inscripcion: oferta.fecha_inscripcion ? new Date(oferta.fecha_inscripcion).toISOString().split('T')[0] : '',
+    fecha_terminacion: oferta.fecha_terminacion ? new Date(oferta.fecha_terminacion).toISOString().split('T')[0] : '',
+    modalidad_oferta: oferta.modalidad_oferta || '',
+    tipo_oferta: oferta.tipo_oferta || '',
+    estado_enviada: oferta.estado_enviada || false,
+    // ✅ AGREGA ESTO:
+    programa: oferta.programa?._id || '',
+  });
+  setModoEdicion(true);
+};
+
+  const cerrarEdicion = () => {
+    setModoEdicion(false);
+    setOfertaEditando(null);
+    setFormData({});
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData({
+      ...formData,
+      [name]: type === 'checkbox' ? checked : value
+    });
+  };
+
+  const guardarCambios = async () => {
+    console.log('🔴 [DEBUG] guardarCambios llamado');
+    console.log('🔴 [DEBUG] ofertaEditando:', ofertaEditando);
+    console.log('🔴 [DEBUG] ofertaEditando._id:', ofertaEditando?._id);
+    console.log('🔴 [DEBUG] formData:', formData);
+
+    try {
+      setGuardando(true);
+      
+      const url = `http://localhost:4000/api/ofertas/${ofertaEditando._id}`;
+      console.log(' [FETCH] Enviando petición PUT a:', url);
+      console.log('📤 [FETCH] Body:', JSON.stringify(formData, null, 2));
+      
+      const response = await fetch(url, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      console.log('📥 [RESPONSE] Status:', response.status, response.statusText);
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('❌ [RESPONSE] Error en la respuesta:', errorData);
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
+      }
+
+      const ofertaActualizada = await response.json();
+      console.log('✅ [RESPONSE] Oferta actualizada recibida:', ofertaActualizada);
+      
+      // Actualizar lista local
+      setOfertas(ofertas.map(o => o._id === ofertaActualizada._id ? ofertaActualizada : o));
+      
+      // Actualizar oferta seleccionada si es la misma
+      if (ofertaSeleccionada?._id === ofertaActualizada._id) {
+        setOfertaSeleccionada(ofertaActualizada);
+      }
+
+      // Notificación de éxito
+      if (window.mostrarNotificacion) {
+        window.mostrarNotificacion('success', '✅ Oferta actualizada correctamente');
+      } else {
+        alert('✅ Oferta actualizada correctamente');
+      }
+
+      cerrarEdicion();
+      
+    } catch (error) {
+      console.error('❌ [ERROR] Error completo:', error);
+      console.error('❌ [ERROR] Stack:', error.stack);
+      
+      if (window.mostrarNotificacion) {
+        window.mostrarNotificacion('error', `❌ Error al guardar cambios: ${error.message}`);
+      } else {
+        alert(`❌ Error al guardar cambios: ${error.message}`);
+      }
+    } finally {
+      setGuardando(false);
+      console.log('🔴 [guardarCambios] PROCESO FINALIZADO');
+    }
   };
 
   if (cargando) {
@@ -210,17 +311,55 @@ const OfertasList = () => {
           width: '60%', 
           overflowY: 'auto',
           padding: '30px',
-          background: 'white'
+          background: 'white',
+          position: 'relative'
         }}>
           {ofertaSeleccionada ? (
             <div>
+              
+              {/* === BOTÓN EDITAR === */}
+              <button
+                onClick={() => abrirEdicion(ofertaSeleccionada)}
+                style={{
+                  position: 'absolute',
+                  top: '25px',
+                  right: '30px',
+                  background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                  color: 'white',
+                  border: 'none',
+                  padding: '10px 20px',
+                  borderRadius: '8px',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  boxShadow: '0 2px 6px rgba(245, 158, 11, 0.3)',
+                  transition: 'all 0.3s ease',
+                  zIndex: 10
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 4px 10px rgba(245, 158, 11, 0.4)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 2px 6px rgba(245, 158, 11, 0.3)';
+                }}
+              >
+                <i className="fas fa-edit"></i>
+                Editar
+              </button>
+
               {/* Header del detalle */}
               <div style={{ 
                 background: 'linear-gradient(135deg, #f0f9ff, #e0f2fe)',
                 padding: '25px',
                 borderRadius: '12px',
                 marginBottom: '25px',
-                border: '2px solid #3b82f6'
+                border: '2px solid #3b82f6',
+                marginTop: '10px'
               }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                   <div>
@@ -364,7 +503,7 @@ const OfertasList = () => {
                 )}
               </div>
 
-              {/* === SECCIÓN: UBICACIÓN (CENTRO REGIONAL CAUCA, SENA) === */}
+              {/* === SECCIÓN: UBICACIÓN === */}
               <div style={{ marginBottom: '25px' }}>
                 <h4 style={{ 
                   color: '#0a3274', 
@@ -654,7 +793,7 @@ const OfertasList = () => {
                 </div>
               </div>
 
-              {/* === SECCIÓN: TOKEN DE INSCRIPCIÓN (LINK CLICABLE + COPIAR) === */}
+              {/* === SECCIÓN: TOKEN DE INSCRIPCIÓN === */}
               {ofertaSeleccionada.token_inscripcion && (
                 <div style={{ 
                   background: 'linear-gradient(135deg, #eff6ff, #dbeafe)',
@@ -677,7 +816,6 @@ const OfertasList = () => {
                     Enlace de Inscripción
                   </div>
                   
-                  {/* Link clicable */}
                   <a 
                     href={`http://localhost:3000/ofertas`}
                     target="_blank"
@@ -713,7 +851,6 @@ const OfertasList = () => {
                     </span>
                   </a>
                   
-                  {/* Botón para copiar */}
                   <button
                     onClick={() => {
                       const link = `http://localhost:3000/ofertas`;
@@ -724,7 +861,6 @@ const OfertasList = () => {
                           alert('✅ Enlace copiado');
                         }
                       }).catch(() => {
-                        // Fallback para navegadores antiguos
                         const textArea = document.createElement('textarea');
                         textArea.value = link;
                         document.body.appendChild(textArea);
@@ -781,6 +917,108 @@ const OfertasList = () => {
           )}
         </div>
       </div>
+
+      {/* === MODAL DE EDICIÓN === */}
+      {modoEdicion && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0,0,0,0.7)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            background: 'white',
+            borderRadius: '12px',
+            padding: '30px',
+            maxWidth: '600px',
+            width: '90%',
+            maxHeight: '80vh',
+            overflowY: 'auto'
+          }}>
+            <h3 style={{ margin: '0 0 20px 0', color: '#0a3274', fontSize: '20px', fontWeight: '600' }}>
+              <i className="fas fa-edit me-2"></i>Editar Oferta
+            </h3>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+              {/* Código de Ficha */}
+              <div>
+                <label style={{ display: 'block', marginBottom: '5px', fontWeight: '600', color: '#1f2937', fontSize: '13px' }}>
+                  <i className="fas fa-code me-1"></i> Código de Ficha
+                </label>
+                <input type="text" name="codigo_ficha" value={formData.codigo_ficha || ''} onChange={handleInputChange}
+                  style={{ width: '100%', padding: '10px', border: '2px solid #e5e7eb', borderRadius: '6px', fontSize: '14px' }} />
+              </div>
+
+              {/* Cupos */}
+              <div>
+                <label style={{ display: 'block', marginBottom: '5px', fontWeight: '600', color: '#1f2937', fontSize: '13px' }}>
+                  <i className="fas fa-users me-1"></i> Cupos
+                </label>
+                <input type="number" name="cupo" value={formData.cupo || ''} onChange={handleInputChange}
+                  style={{ width: '100%', padding: '10px', border: '2px solid #e5e7eb', borderRadius: '6px', fontSize: '14px' }} />
+              </div>
+
+              {/* Fecha Inicio */}
+              <div>
+                <label style={{ display: 'block', marginBottom: '5px', fontWeight: '600', color: '#1f2937', fontSize: '13px' }}>
+                  <i className="fas fa-calendar me-1"></i> Fecha de Inicio
+                </label>
+                <input type="date" name="fecha_inicio" value={formData.fecha_inicio || ''} onChange={handleInputChange}
+                  style={{ width: '100%', padding: '10px', border: '2px solid #e5e7eb', borderRadius: '6px', fontSize: '14px' }} />
+              </div>
+
+              {/* Fecha Inscripción */}
+              <div>
+                <label style={{ display: 'block', marginBottom: '5px', fontWeight: '600', color: '#1f2937', fontSize: '13px' }}>
+                  <i className="fas fa-calendar-check me-1"></i> Fecha Límite de Inscripción
+                </label>
+                <input type="date" name="fecha_inscripcion" value={formData.fecha_inscripcion || ''} onChange={handleInputChange}
+                  style={{ width: '100%', padding: '10px', border: '2px solid #e5e7eb', borderRadius: '6px', fontSize: '14px' }} />
+              </div>
+
+              {/* Modalidad */}
+              <div>
+                <label style={{ display: 'block', marginBottom: '5px', fontWeight: '600', color: '#1f2937', fontSize: '13px' }}>
+                  <i className="fas fa-graduation-cap me-1"></i> Modalidad
+                </label>
+                <select name="modalidad_oferta" value={formData.modalidad_oferta || ''} onChange={handleInputChange}
+                  style={{ width: '100%', padding: '10px', border: '2px solid #e5e7eb', borderRadius: '6px', fontSize: '14px' }}>
+                  <option value="">Seleccione...</option>
+                  <option value="Presencial">Presencial</option>
+                  <option value="Virtual">Virtual</option>
+                  <option value="Mixta">Mixta</option>
+                </select>
+              </div>
+
+              {/* Estado Enviada */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px', background: '#f3f4f6', borderRadius: '6px' }}>
+                <input type="checkbox" name="estado_enviada" checked={formData.estado_enviada || false} onChange={handleInputChange} id="estado_enviada" style={{ width: '18px', height: '18px' }} />
+                <label htmlFor="estado_enviada" style={{ fontWeight: '600', color: '#1f2937', fontSize: '14px', cursor: 'pointer' }}>
+                  <i className="fas fa-paper-plane me-1"></i> Marca como Enviada
+                </label>
+              </div>
+            </div>
+
+            {/* Botones */}
+            <div style={{ display: 'flex', gap: '10px', marginTop: '25px', justifyContent: 'flex-end' }}>
+              <button onClick={cerrarEdicion} disabled={guardando}
+                style={{ background: '#6b7280', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '6px', fontSize: '14px', fontWeight: '600', cursor: guardando ? 'not-allowed' : 'pointer', opacity: guardando ? 0.6 : 1 }}>
+                <i className="fas fa-times me-2"></i>Cancelar
+              </button>
+              <button onClick={guardarCambios} disabled={guardando}
+                style={{ background: guardando ? '#9ca3af' : 'linear-gradient(135deg, #10b981, #059669)', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '6px', fontSize: '14px', fontWeight: '600', cursor: guardando ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                {guardando ? <><i className="fas fa-spinner fa-spin"></i> Guardando...</> : <><i className="fas fa-save"></i> Guardar Cambios</>}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

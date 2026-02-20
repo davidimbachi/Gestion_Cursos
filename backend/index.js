@@ -27,7 +27,9 @@ app.use("/api/solicitudes", solicitudesRoutes);
 app.use("/uploads", express.static("uploads")); // Servir archivos estáticos
 
 app.use(async (req, res, next) => {
-  const usuario = await Usuario.findOne({ email: "wendy@gmail.com" });
+  const usuario = await Usuario.findOne({ email: "wendy@gmail.com" }).populate('rol');
+  console.log('✅ Usuario cargado:', usuario?.email);
+  console.log('✅ Rol cargado:', usuario?.rol);
   req.usuario = usuario;
   next();
 });
