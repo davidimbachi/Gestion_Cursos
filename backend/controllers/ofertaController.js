@@ -26,11 +26,14 @@ const crearOferta = async (req, res) => {
 // Listar ofertas-----
 const listarOfertas = async (req, res) => {
   try {
-    const ofertas = await Oferta.find()
-      // Usuario
-      .populate("usuario", "nombre email username")  
-      
-      // Programa con sus referencias
+    // ✅ Verificar que haya un usuario autenticado
+    if (!req.usuario) {
+      return res.status(401).json({ msg: "No autorizado" });
+    }
+
+    // ✅ Filtrar: SOLO ofertas del usuario actual
+    const ofertas = await Oferta.find({ usuario: req.usuario._id })
+      .populate("usuario", "nombre email username")
       .populate({
         path: "programa",
         select: "codigo nombre version duracion",
@@ -40,41 +43,21 @@ const listarOfertas = async (req, res) => {
           { path: "red_conocimiento", select: "nombre" }
         ]
       })
-
-      // Modalidad del programa
       .populate("modalidad_programa", "nombre")
-      
-      // LUGAR - Con departamento, municipio y corregimiento (UNIFICADO)
       .populate({
         path: "lugar",
         select: "ambiente direccion",
         populate: [
-          { 
-            path: "departamento", 
-            select: "nombre",
-            model: "Departamento"
-          },
-          { 
-            path: "municipio", 
-            select: "nombre",
-            model: "Municipio"
-          },
-          { 
-            path: "corregimiento", 
-            select: "nombre",
-            model: "Corregimiento"
-          }
+          { path: "departamento", select: "nombre", model: "Departamento" },
+          { path: "municipio", select: "nombre", model: "Municipio" },
+          { path: "corregimiento", select: "nombre", model: "Corregimiento" }
         ]
       })
-      
-      // Empresa solicitante
       .populate("empresa_solicitante", "nombre nit ciudad")
-      
-      // Programa especial
-      .populate("programa_especial", "nombre");
+      .populate("programa_especial", "nombre")
+      .sort({ createdAt: -1 });
     
-    // Log para verificar que los datos llegan bien
-    console.log('📍 Ubicación (ejemplo):', JSON.stringify(ofertas[0]?.lugar, null, 2));
+    console.log(`📊 Ofertas de ${req.usuario.nombre}: ${ofertas.length} encontradas`);
     
     res.json(ofertas);
   } catch (error) {

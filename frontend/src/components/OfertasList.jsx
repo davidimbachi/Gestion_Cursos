@@ -50,23 +50,22 @@ const OfertasList = () => {
   };
 
   // === FUNCIONES DE EDICIÓN ===
-const abrirEdicion = (oferta) => {
-  console.log('🔵 [abrirEdicion] Abriendo modal para oferta:', oferta._id);
-  setOfertaEditando(oferta);
-  setFormData({
-    codigo_ficha: oferta.codigo_ficha || '',
-    cupo: oferta.cupo || '',
-    fecha_inicio: oferta.fecha_inicio ? new Date(oferta.fecha_inicio).toISOString().split('T')[0] : '',
-    fecha_inscripcion: oferta.fecha_inscripcion ? new Date(oferta.fecha_inscripcion).toISOString().split('T')[0] : '',
-    fecha_terminacion: oferta.fecha_terminacion ? new Date(oferta.fecha_terminacion).toISOString().split('T')[0] : '',
-    modalidad_oferta: oferta.modalidad_oferta || '',
-    tipo_oferta: oferta.tipo_oferta || '',
-    estado_enviada: oferta.estado_enviada || false,
-    // ✅ AGREGA ESTO:
-    programa: oferta.programa?._id || '',
-  });
-  setModoEdicion(true);
-};
+  const abrirEdicion = (oferta) => {
+    console.log('🔵 [abrirEdicion] Abriendo modal para oferta:', oferta._id);
+    setOfertaEditando(oferta);
+    setFormData({
+      codigo_ficha: oferta.codigo_ficha || '',
+      cupo: oferta.cupo || '',
+      fecha_inicio: oferta.fecha_inicio ? new Date(oferta.fecha_inicio).toISOString().split('T')[0] : '',
+      fecha_inscripcion: oferta.fecha_inscripcion ? new Date(oferta.fecha_inscripcion).toISOString().split('T')[0] : '',
+      fecha_terminacion: oferta.fecha_terminacion ? new Date(oferta.fecha_terminacion).toISOString().split('T')[0] : '',
+      modalidad_oferta: oferta.modalidad_oferta || '',
+      tipo_oferta: oferta.tipo_oferta || '',
+      estado_enviada: oferta.estado_enviada || false,
+      programa: oferta.programa?._id || '',
+    });
+    setModoEdicion(true);
+  };
 
   const cerrarEdicion = () => {
     setModoEdicion(false);
@@ -87,14 +86,11 @@ const abrirEdicion = (oferta) => {
     console.log('🔴 [DEBUG] ofertaEditando:', ofertaEditando);
     console.log('🔴 [DEBUG] ofertaEditando._id:', ofertaEditando?._id);
     console.log('🔴 [DEBUG] formData:', formData);
-
     try {
       setGuardando(true);
-      
       const url = `http://localhost:4000/api/ofertas/${ofertaEditando._id}`;
       console.log(' [FETCH] Enviando petición PUT a:', url);
       console.log('📤 [FETCH] Body:', JSON.stringify(formData, null, 2));
-      
       const response = await fetch(url, {
         method: 'PUT',
         headers: {
@@ -102,39 +98,27 @@ const abrirEdicion = (oferta) => {
         },
         body: JSON.stringify(formData),
       });
-
       console.log('📥 [RESPONSE] Status:', response.status, response.statusText);
-      
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         console.error('❌ [RESPONSE] Error en la respuesta:', errorData);
         throw new Error(`Error ${response.status}: ${response.statusText}`);
       }
-
       const ofertaActualizada = await response.json();
       console.log('✅ [RESPONSE] Oferta actualizada recibida:', ofertaActualizada);
-      
-      // Actualizar lista local
       setOfertas(ofertas.map(o => o._id === ofertaActualizada._id ? ofertaActualizada : o));
-      
-      // Actualizar oferta seleccionada si es la misma
       if (ofertaSeleccionada?._id === ofertaActualizada._id) {
         setOfertaSeleccionada(ofertaActualizada);
       }
-
-      // Notificación de éxito
       if (window.mostrarNotificacion) {
         window.mostrarNotificacion('success', '✅ Oferta actualizada correctamente');
       } else {
         alert('✅ Oferta actualizada correctamente');
       }
-
       cerrarEdicion();
-      
     } catch (error) {
       console.error('❌ [ERROR] Error completo:', error);
       console.error('❌ [ERROR] Stack:', error.stack);
-      
       if (window.mostrarNotificacion) {
         window.mostrarNotificacion('error', `❌ Error al guardar cambios: ${error.message}`);
       } else {
@@ -265,25 +249,8 @@ const abrirEdicion = (oferta) => {
                     }
                   }}
                 >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
-                    <div style={{ fontWeight: '600', fontSize: '14px' }}>
-                      {oferta.codigo_ficha || 'Sin ficha'}
-                    </div>
-                    <span style={{
-                      background: oferta.estado_enviada 
-                        ? (ofertaSeleccionada?._id === oferta._id ? '#10b981' : '#d1fae5')
-                        : (ofertaSeleccionada?._id === oferta._id ? '#f59e0b' : '#fef3c7'),
-                      color: oferta.estado_enviada 
-                        ? (ofertaSeleccionada?._id === oferta._id ? 'white' : '#059669')
-                        : (ofertaSeleccionada?._id === oferta._id ? 'white' : '#d97706'),
-                      padding: '4px 10px',
-                      borderRadius: '12px',
-                      fontSize: '10px',
-                      fontWeight: '700',
-                      textTransform: 'uppercase'
-                    }}>
-                      {oferta.estado_enviada ? 'ENVIADA' : 'BORRADOR'}
-                    </span>
+                  <div style={{ fontWeight: '600', fontSize: '14px', marginBottom: '8px' }}>
+                    {oferta.codigo_ficha || 'Sin ficha'}
                   </div>
                   
                   <div style={{ fontSize: '13px', marginBottom: '6px', opacity: 0.9 }}>
@@ -369,27 +336,8 @@ const abrirEdicion = (oferta) => {
                       fontSize: '24px',
                       fontWeight: '600'
                     }}>
-                      {ofertaSeleccionada.codigo_ficha || 'Sin ficha'}
+                      <i className="fas fa-briefcase me-2"></i>Detalles de la Oferta
                     </h3>
-                    <p style={{ margin: 0, color: '#6b7280', fontSize: '14px' }}>
-                      <i className="fas fa-calendar-plus me-2"></i>
-                      Creada: {formatearFechaCorta(ofertaSeleccionada.createdAt)}
-                    </p>
-                  </div>
-                  <div style={{
-                    background: ofertaSeleccionada.estado_enviada 
-                      ? 'linear-gradient(135deg, #10b981, #059669)' 
-                      : 'linear-gradient(135deg, #f59e0b, #d97706)',
-                    color: 'white',
-                    padding: '10px 20px',
-                    borderRadius: '20px',
-                    fontSize: '12px',
-                    fontWeight: '700',
-                    textTransform: 'uppercase',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
-                  }}>
-                    <i className={ofertaSeleccionada.estado_enviada ? 'fas fa-check-circle' : 'fas fa-clock'}></i>
-                    {' '}{ofertaSeleccionada.estado_enviada ? 'Enviada' : 'Borrador'}
                   </div>
                 </div>
               </div>
@@ -417,15 +365,6 @@ const abrirEdicion = (oferta) => {
                   border: '2px solid #3b82f6',
                   marginBottom: '15px'
                 }}>
-                  <div style={{ marginBottom: '12px' }}>
-                    <div style={{ fontSize: '11px', color: '#6b7280', textTransform: 'uppercase', fontWeight: '700', marginBottom: '6px' }}>
-                      <i className="fas fa-code me-1"></i> Código del Programa
-                    </div>
-                    <div style={{ fontSize: '18px', color: '#0a3274', fontWeight: '700' }}>
-                      {ofertaSeleccionada.programa?.codigo || 'N/A'}
-                    </div>
-                  </div>
-                  
                   <div style={{ marginBottom: '12px' }}>
                     <div style={{ fontSize: '11px', color: '#6b7280', textTransform: 'uppercase', fontWeight: '700', marginBottom: '6px' }}>
                       <i className="fas fa-book me-1"></i> Nombre del Programa
@@ -666,15 +605,15 @@ const abrirEdicion = (oferta) => {
               }}>
                 <h4 style={{ 
                   color: '#0a3274', 
-                  fontSize: '16px', 
-                  fontWeight: '600',
+                  fontSize: '18px', 
+                  fontWeight: '700',
                   marginBottom: '20px',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '10px'
                 }}>
-                  <i className="fas fa-chart-bar"></i>
-                  Detalles de la Oferta
+                  <i className="fas fa-graduation-cap"></i>
+                  {ofertaSeleccionada.programa?.nombre || 'Sin programa'}
                 </h4>
                 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
@@ -791,6 +730,142 @@ const abrirEdicion = (oferta) => {
                     </div>
                   )}
                 </div>
+              </div>
+
+              {/* ✅ NUEVA SECCIÓN: DOCUMENTOS (PLACEHOLDER) */}
+              <div style={{ 
+                background: '#fff',
+                padding: '25px',
+                borderRadius: '12px',
+                border: '2px solid #e5e7eb',
+                marginBottom: '20px'
+              }}>
+                <h4 style={{ 
+                  color: '#0a3274', 
+                  fontSize: '16px', 
+                  fontWeight: '600',
+                  marginBottom: '20px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px'
+                }}>
+                  <i className="fas fa-file-pdf"></i>
+                  Documentos de la Oferta
+                </h4>
+                
+                {/* Grid de documentos - PLACEHOLDER (se conectará después) */}
+                <div style={{ 
+                  display: 'grid', 
+                  gridTemplateColumns: 'repeat(3, 1fr)', 
+                  gap: '15px' 
+                }}>
+                  {/* Documento 1: Ficha de caracterización */}
+                  <div style={{
+                    background: 'linear-gradient(135deg, #fef2f2, #fee2e2)',
+                    padding: '20px',
+                    borderRadius: '10px',
+                    border: '2px solid #fecaca',
+                    textAlign: 'center',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease'
+                  }}>
+                    <i className="fas fa-file-pdf" style={{ 
+                      fontSize: '40px', 
+                      color: '#dc2626',
+                      marginBottom: '10px'
+                    }}></i>
+                    <div style={{ 
+                      fontSize: '12px', 
+                      color: '#1f2937',
+                      fontWeight: '600',
+                      marginTop: '8px'
+                    }}>
+                      Ficha de caracterización
+                    </div>
+                    <div style={{ 
+                      fontSize: '10px', 
+                      color: '#6b7280',
+                      marginTop: '4px'
+                    }}>
+                      PDF
+                    </div>
+                  </div>
+
+                  {/* Documento 2: Ver Masivo Aprendices */}
+                  <div style={{
+                    background: 'linear-gradient(135deg, #fef2f2, #fee2e2)',
+                    padding: '20px',
+                    borderRadius: '10px',
+                    border: '2px solid #fecaca',
+                    textAlign: 'center',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease'
+                  }}>
+                    <i className="fas fa-file-pdf" style={{ 
+                      fontSize: '40px', 
+                      color: '#dc2626',
+                      marginBottom: '10px'
+                    }}></i>
+                    <div style={{ 
+                      fontSize: '12px', 
+                      color: '#1f2937',
+                      fontWeight: '600',
+                      marginTop: '8px'
+                    }}>
+                      Ver Masivo Aprendices
+                    </div>
+                    <div style={{ 
+                      fontSize: '10px', 
+                      color: '#6b7280',
+                      marginTop: '4px'
+                    }}>
+                      PDF
+                    </div>
+                  </div>
+
+                  {/* Documento 3: Documentos de identificación */}
+                  <div style={{
+                    background: 'linear-gradient(135deg, #fef2f2, #fee2e2)',
+                    padding: '20px',
+                    borderRadius: '10px',
+                    border: '2px solid #fecaca',
+                    textAlign: 'center',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease'
+                  }}>
+                    <i className="fas fa-file-pdf" style={{ 
+                      fontSize: '40px', 
+                      color: '#dc2626',
+                      marginBottom: '10px'
+                    }}></i>
+                    <div style={{ 
+                      fontSize: '12px', 
+                      color: '#1f2937',
+                      fontWeight: '600',
+                      marginTop: '8px'
+                    }}>
+                      Documentos de identificación
+                    </div>
+                    <div style={{ 
+                      fontSize: '10px', 
+                      color: '#6b7280',
+                      marginTop: '4px'
+                    }}>
+                      PDF
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Nota de placeholder */}
+                <p style={{ 
+                  fontSize: '11px', 
+                  color: '#9ca3af', 
+                  textAlign: 'center', 
+                  marginTop: '15px',
+                  fontStyle: 'italic'
+                }}>
+                  🔌 Se conectará con los documentos reales próximamente
+                </p>
               </div>
 
               {/* === SECCIÓN: TOKEN DE INSCRIPCIÓN === */}
@@ -946,7 +1021,6 @@ const abrirEdicion = (oferta) => {
             </h3>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-              {/* Código de Ficha */}
               <div>
                 <label style={{ display: 'block', marginBottom: '5px', fontWeight: '600', color: '#1f2937', fontSize: '13px' }}>
                   <i className="fas fa-code me-1"></i> Código de Ficha
@@ -955,7 +1029,6 @@ const abrirEdicion = (oferta) => {
                   style={{ width: '100%', padding: '10px', border: '2px solid #e5e7eb', borderRadius: '6px', fontSize: '14px' }} />
               </div>
 
-              {/* Cupos */}
               <div>
                 <label style={{ display: 'block', marginBottom: '5px', fontWeight: '600', color: '#1f2937', fontSize: '13px' }}>
                   <i className="fas fa-users me-1"></i> Cupos
@@ -964,7 +1037,6 @@ const abrirEdicion = (oferta) => {
                   style={{ width: '100%', padding: '10px', border: '2px solid #e5e7eb', borderRadius: '6px', fontSize: '14px' }} />
               </div>
 
-              {/* Fecha Inicio */}
               <div>
                 <label style={{ display: 'block', marginBottom: '5px', fontWeight: '600', color: '#1f2937', fontSize: '13px' }}>
                   <i className="fas fa-calendar me-1"></i> Fecha de Inicio
@@ -973,7 +1045,6 @@ const abrirEdicion = (oferta) => {
                   style={{ width: '100%', padding: '10px', border: '2px solid #e5e7eb', borderRadius: '6px', fontSize: '14px' }} />
               </div>
 
-              {/* Fecha Inscripción */}
               <div>
                 <label style={{ display: 'block', marginBottom: '5px', fontWeight: '600', color: '#1f2937', fontSize: '13px' }}>
                   <i className="fas fa-calendar-check me-1"></i> Fecha Límite de Inscripción
@@ -982,7 +1053,6 @@ const abrirEdicion = (oferta) => {
                   style={{ width: '100%', padding: '10px', border: '2px solid #e5e7eb', borderRadius: '6px', fontSize: '14px' }} />
               </div>
 
-              {/* Modalidad */}
               <div>
                 <label style={{ display: 'block', marginBottom: '5px', fontWeight: '600', color: '#1f2937', fontSize: '13px' }}>
                   <i className="fas fa-graduation-cap me-1"></i> Modalidad
@@ -996,7 +1066,6 @@ const abrirEdicion = (oferta) => {
                 </select>
               </div>
 
-              {/* Estado Enviada */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px', background: '#f3f4f6', borderRadius: '6px' }}>
                 <input type="checkbox" name="estado_enviada" checked={formData.estado_enviada || false} onChange={handleInputChange} id="estado_enviada" style={{ width: '18px', height: '18px' }} />
                 <label htmlFor="estado_enviada" style={{ fontWeight: '600', color: '#1f2937', fontSize: '14px', cursor: 'pointer' }}>
@@ -1005,7 +1074,6 @@ const abrirEdicion = (oferta) => {
               </div>
             </div>
 
-            {/* Botones */}
             <div style={{ display: 'flex', gap: '10px', marginTop: '25px', justifyContent: 'flex-end' }}>
               <button onClick={cerrarEdicion} disabled={guardando}
                 style={{ background: '#6b7280', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '6px', fontSize: '14px', fontWeight: '600', cursor: guardando ? 'not-allowed' : 'pointer', opacity: guardando ? 0.6 : 1 }}>
