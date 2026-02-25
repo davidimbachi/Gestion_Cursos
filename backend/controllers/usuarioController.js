@@ -3,6 +3,9 @@ import generarJWT from "../helpers/generarJWT.js";
 import generarToken from "../helpers/generarToken.js";
 import SolicitudRol from "../models/solicitud/SolicitudRol.js";
 import Rol from "../models/usuarios/Rol.js";
+import crypto from "crypto";
+import { sendResetPasswordEmail } from '../config/email.js';
+
 
 // Registrar nuevo usuario
 const registrar = async (req, res) => {
@@ -11,14 +14,15 @@ const registrar = async (req, res) => {
       username,
       email,
       password,
-      confirmPassword,
+      confirmPassword,  
       first_name,
       last_name,
       telefono,
       tipo_identificacion,
       numero_identificacion,
       rol,
-      coordinador,
+      tipo_programa,
+      coordinadorAsignado, // ← AGREGADO
       firma_digital,
     } = req.body;
 
@@ -48,29 +52,48 @@ const registrar = async (req, res) => {
       });
     }
 
-    // ✅ Validar coordinador si es Instructor
-    if (rol === "Instructor" && !coordinador) {
-      return res.status(400).json({
-        msg: "Debes seleccionar un coordinador",
+    // ✅ Validar si es Instructor
+    if (rol === "Instructor") {
+      if (!tipo_programa) {
+        return res.status(400).json({ msg: "Debes seleccionar un tipo de programa" });
+      }
+      if (!coordinadorAsignado) {
+        return res.status(400).json({ msg: "Debes seleccionar un coordinador" });
+      }
+
+      // Verificar que el coordinador existe, está activo y pertenece al tipo correcto
+      const rolCoordinador = await Rol.findOne({ nombre: "Coordinador" });
+      const coordinadorValido = await Usuario.findOne({
+        _id: coordinadorAsignado,
+        rol: rolCoordinador._id,
+        tipo_programa,
+        is_active: true,
       });
+
+      if (!coordinadorValido) {
+        return res.status(400).json({
+          msg: "El coordinador no es válido para este tipo de programa",
+        });
+      }
     }
 
     //  Crear usuario
     const usuario = new Usuario({
-    username,
-    email,
-    password,
-    first_name,
-    last_name,
-    telefono,
-    tipo_identificacion,
-    numero_identificacion,
-    firma_digital: req.file ? req.file.filename : null,
-    coordinador: rol === "Instructor" ? coordinador : null,
-    rol: rolInvitado._id,
-    email_verificado: false,
-    token_verificacion: generarToken(),
-  });
+      username,
+      email,
+      password,
+      first_name,
+      last_name,
+      telefono,
+      tipo_identificacion,
+      numero_identificacion,
+      firma_digital: req.file ? req.file.filename : null,
+      tipo_programa: rol === "Instructor" ? tipo_programa : null,
+      coordinadorAsignado: rol === "Instructor" ? coordinadorAsignado : null, // ← AGREGADO
+      rol: rolInvitado._id,
+      email_verificado: false,
+      token_verificacion: generarToken(),
+    });
 
     await usuario.save();
 
@@ -91,7 +114,36 @@ const registrar = async (req, res) => {
   }
 };
 
-// confirmar email
+
+// ✅ Obtener coordinadores por tipo de programa
+const obtenerCoordinadores = async (req, res) => {
+  try {
+    const { tipo_programa } = req.query;
+
+    const rolCoordinador = await Rol.findOne({ nombre: "Coordinador" });
+
+    if (!rolCoordinador) {
+      return res.status(404).json({ msg: "Rol coordinador no encontrado" });
+    }
+
+    const filtro = {
+      rol: rolCoordinador._id,
+      ...(tipo_programa && { tipo_programa }),
+    };
+
+    const coordinadores = await Usuario.find(filtro).select(
+       "_id nombre first_name last_name tipo_programa"
+    );
+
+    res.json(coordinadores);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ msg: "Error al obtener coordinadores" });
+  }
+};
+
+
+// Confirmar email
 const confirmarEmail = async (req, res) => {
   const { token } = req.params;
 
@@ -111,9 +163,9 @@ const confirmarEmail = async (req, res) => {
   res.json({ msg: "Email verificado correctamente" });
 };
 
-// OLVIDÉ PASSWORD
-import crypto from "crypto";
 
+// OLVIDÉ PASSWORD
+// OLVIDÉ PASSWORD
 const olvidePassword = async (req, res) => {
   const { email } = req.body;
 
@@ -127,12 +179,15 @@ const olvidePassword = async (req, res) => {
 
   await usuario.save();
 
-  res.json({
-    msg: "Token generado",
-    token: usuario.token_reset, // solo para Postman
-  });
+  // Enviar correo
+  try {
+    await sendResetPasswordEmail(email, usuario.token_reset);
+    res.json({ msg: "Correo enviado con las instrucciones" });
+  } catch (error) {
+    console.error('Error al enviar correo:', error);
+    res.status(500).json({ msg: "Error al enviar el correo" });
+  }
 };
-
 
 // NUEVO PASSWORD
 const nuevoPassword = async (req, res) => {
@@ -175,9 +230,9 @@ const autenticar = async (req, res) => {
   }
 
   if (!usuario.is_active) {
-  return res.status(403).json({
-    msg: "Tu cuenta está desactivada por el administrador",
-  });
+    return res.status(403).json({
+      msg: "Tu cuenta está desactivada por el administrador",
+    });
   }
 
   const passwordCorrecto = await usuario.comprobarPassword(password);
@@ -200,7 +255,7 @@ export {
   registrar,
   confirmarEmail,
   olvidePassword,
-    nuevoPassword,
+  nuevoPassword,
   autenticar,
+  obtenerCoordinadores, // ← AGREGADO
 };
-
