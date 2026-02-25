@@ -5,22 +5,24 @@
     confirmarEmail,
     olvidePassword,
     nuevoPassword,
+    obtenerCoordinadores,
     autenticar,} from "../controllers/usuarioController.js";
     import uploadFirma from "../middleware/uploadFirma.js";
 
   // import checkAuth from "../middleware/checkAuth.js";
 
   // Crear usuario
-router.post("/registro", uploadFirma.single("firma_digital"), registrar);
-  // Login
+router.post("/registro", uploadFirma.single("firma_digital"), registrar);  // Login
   router.post("/login", autenticar);
 
   // Confirmar emial 
   router.get("/confirmar/:token", confirmarEmail);
 
   // Recuperar password
- router.post("/olvide-password", olvidePassword);
-router.post("/olvide-password/:token", nuevoPassword);
+  router.post("/olvide-password", olvidePassword);
+  router.post("/nuevo-password/:token", nuevoPassword);
+  // Obtener coordinadores
+  router.get("/coordinadores", obtenerCoordinadores);
 
   // Perfil protegido
   // router.get("/perfil", checkAuth, perfil);

@@ -5,9 +5,14 @@ import Usuario from "../models/usuarios/Usuario.js";
  *  Ver solicitudes pendientes
  */
 const listarSolicitudesPendientes = async (req, res) => {
-  const solicitudes = await SolicitudRol.find({ estado: "pendiente" })
+  const { estado } = req.query;
+  
+  const filtro = estado ? { estado } : {}; // si viene ?estado=pendiente filtra, si no trae todas
+  
+  const solicitudes = await SolicitudRol.find(filtro)
     .populate("usuario", "username email")
-    .populate("rolSolicitado", "nombre");
+    .populate("rolSolicitado", "nombre")
+    .sort({ createdAt: -1 });
 
   res.json(solicitudes);
 };

@@ -23,12 +23,12 @@ const UsuarioSchema = new mongoose.Schema(
     last_name: String,
     telefono: {
       type: String,
-      match: /^3\d{9}$/,
     },
-    tipo_identificacion: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "TipoIdentificacion",
-    },
+   tipo_identificacion: {
+  type: String,
+  enum: ["CC", "TI", "CE", "Pasaporte"],
+  default: "CC",
+},
     numero_identificacion: {
       type: String,
       minlength: 5,
@@ -47,6 +47,17 @@ const UsuarioSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    coordinadorAsignado: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Usuario",
+      default: null,
+    },
+   tipo_programa: {
+    type: String,
+    enum: ["Regular", "Campesena", null],
+    default: null,
+  },
+
     email_verificado: {
       type: Boolean,
       default: false,
