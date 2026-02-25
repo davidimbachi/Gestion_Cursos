@@ -89,7 +89,7 @@ const OfertasList = () => {
     try {
       setGuardando(true);
       const url = `http://localhost:4000/api/ofertas/${ofertaEditando._id}`;
-      console.log(' [FETCH] Enviando petición PUT a:', url);
+      console.log('📤 [FETCH] Enviando petición PUT a:', url);
       console.log('📤 [FETCH] Body:', JSON.stringify(formData, null, 2));
       const response = await fetch(url, {
         method: 'PUT',
@@ -596,7 +596,7 @@ const OfertasList = () => {
                 </div>
               </div>
 
-              {/* === SECCIÓN: DETALLES DE LA OFERTA === */}
+              {/* ✅ CAMBIO: Sección "Detalles de la Oferta" sin el nombre del programa duplicado */}
               <div style={{ 
                 background: 'linear-gradient(135deg, #f0f9ff, #e0f2fe)',
                 padding: '25px',
@@ -605,15 +605,15 @@ const OfertasList = () => {
               }}>
                 <h4 style={{ 
                   color: '#0a3274', 
-                  fontSize: '18px', 
-                  fontWeight: '700',
+                  fontSize: '16px', 
+                  fontWeight: '600',
                   marginBottom: '20px',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '10px'
                 }}>
-                  <i className="fas fa-graduation-cap"></i>
-                  {ofertaSeleccionada.programa?.nombre || 'Sin programa'}
+                  <i className="fas fa-chart-bar"></i>
+                  Detalles de la Oferta
                 </h4>
                 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
@@ -732,7 +732,7 @@ const OfertasList = () => {
                 </div>
               </div>
 
-              {/* ✅ NUEVA SECCIÓN: DOCUMENTOS (PLACEHOLDER) */}
+              {/* === SECCIÓN: DOCUMENTOS (FUNCIONALES) === */}
               <div style={{ 
                 background: '#fff',
                 padding: '25px',
@@ -753,118 +753,156 @@ const OfertasList = () => {
                   Documentos de la Oferta
                 </h4>
                 
-                {/* Grid de documentos - PLACEHOLDER (se conectará después) */}
+                {/* Grid de documentos funcionales */}
                 <div style={{ 
                   display: 'grid', 
                   gridTemplateColumns: 'repeat(3, 1fr)', 
                   gap: '15px' 
                 }}>
                   {/* Documento 1: Ficha de caracterización */}
-                  <div style={{
-                    background: 'linear-gradient(135deg, #fef2f2, #fee2e2)',
-                    padding: '20px',
-                    borderRadius: '10px',
-                    border: '2px solid #fecaca',
-                    textAlign: 'center',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease'
-                  }}>
+                  <div 
+                    onClick={() => {}}
+                    style={{
+                      background: 'linear-gradient(135deg, #fef2f2, #fee2e2)',
+                      padding: '25px 15px',
+                      borderRadius: '12px',
+                      border: '2px solid #fecaca',
+                      textAlign: 'center',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease',
+                      boxShadow: '0 2px 8px rgba(239, 68, 68, 0.1)'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'translateY(-5px)';
+                      e.currentTarget.style.boxShadow = '0 4px 12px rgba(239, 68, 68, 0.2)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.boxShadow = '0 2px 8px rgba(239, 68, 68, 0.1)';
+                    }}
+                  >
                     <i className="fas fa-file-pdf" style={{ 
-                      fontSize: '40px', 
+                      fontSize: '48px', 
                       color: '#dc2626',
-                      marginBottom: '10px'
+                      marginBottom: '12px'
                     }}></i>
                     <div style={{ 
-                      fontSize: '12px', 
+                      fontSize: '13px', 
                       color: '#1f2937',
                       fontWeight: '600',
-                      marginTop: '8px'
+                      marginTop: '8px',
+                      lineHeight: 1.3
                     }}>
                       Ficha de caracterización
                     </div>
                     <div style={{ 
-                      fontSize: '10px', 
+                      fontSize: '11px', 
                       color: '#6b7280',
-                      marginTop: '4px'
+                      marginTop: '6px'
                     }}>
                       PDF
                     </div>
                   </div>
 
                   {/* Documento 2: Ver Masivo Aprendices */}
-                  <div style={{
-                    background: 'linear-gradient(135deg, #fef2f2, #fee2e2)',
-                    padding: '20px',
-                    borderRadius: '10px',
-                    border: '2px solid #fecaca',
-                    textAlign: 'center',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease'
-                  }}>
-                    <i className="fas fa-file-pdf" style={{ 
-                      fontSize: '40px', 
-                      color: '#dc2626',
-                      marginBottom: '10px'
+                  <div 
+                    onClick={() => {}}
+                    style={{
+                      background: 'linear-gradient(135deg, #f0fdf4, #dcfce7)',
+                      padding: '25px 15px',
+                      borderRadius: '12px',
+                      border: '2px solid #86efac',
+                      textAlign: 'center',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease',
+                      boxShadow: '0 2px 8px rgba(34, 197, 94, 0.1)'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'translateY(-5px)';
+                      e.currentTarget.style.boxShadow = '0 4px 12px rgba(34, 197, 94, 0.2)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.boxShadow = '0 2px 8px rgba(34, 197, 94, 0.1)';
+                    }}
+                  >
+                    <i className="fas fa-file-excel" style={{ 
+                      fontSize: '48px', 
+                      color: '#16a34a',
+                      marginBottom: '12px'
                     }}></i>
                     <div style={{ 
-                      fontSize: '12px', 
+                      fontSize: '13px', 
                       color: '#1f2937',
                       fontWeight: '600',
-                      marginTop: '8px'
+                      marginTop: '8px',
+                      lineHeight: 1.3
                     }}>
                       Ver Masivo Aprendices
                     </div>
                     <div style={{ 
-                      fontSize: '10px', 
+                      fontSize: '11px', 
                       color: '#6b7280',
-                      marginTop: '4px'
+                      marginTop: '6px'
                     }}>
-                      PDF
+                      Excel/CSV
                     </div>
                   </div>
 
                   {/* Documento 3: Documentos de identificación */}
-                  <div style={{
-                    background: 'linear-gradient(135deg, #fef2f2, #fee2e2)',
-                    padding: '20px',
-                    borderRadius: '10px',
-                    border: '2px solid #fecaca',
-                    textAlign: 'center',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease'
-                  }}>
-                    <i className="fas fa-file-pdf" style={{ 
-                      fontSize: '40px', 
-                      color: '#dc2626',
-                      marginBottom: '10px'
+                  <div 
+                    onClick={() => {}}
+                    style={{
+                      background: 'linear-gradient(135deg, #f3f4f6, #e5e7eb)',
+                      padding: '25px 15px',
+                      borderRadius: '12px',
+                      border: '2px solid #d1d5db',
+                      textAlign: 'center',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease',
+                      boxShadow: '0 2px 8px rgba(107, 114, 128, 0.1)'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'translateY(-5px)';
+                      e.currentTarget.style.boxShadow = '0 4px 12px rgba(107, 114, 128, 0.2)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.boxShadow = '0 2px 8px rgba(107, 114, 128, 0.1)';
+                    }}
+                  >
+                    <i className="fas fa-id-card" style={{ 
+                      fontSize: '48px', 
+                      color: '#6b7280',
+                      marginBottom: '12px'
                     }}></i>
                     <div style={{ 
-                      fontSize: '12px', 
+                      fontSize: '13px', 
                       color: '#1f2937',
                       fontWeight: '600',
-                      marginTop: '8px'
+                      marginTop: '8px',
+                      lineHeight: 1.3
                     }}>
                       Documentos de identificación
                     </div>
                     <div style={{ 
-                      fontSize: '10px', 
+                      fontSize: '11px', 
                       color: '#6b7280',
-                      marginTop: '4px'
+                      marginTop: '6px'
                     }}>
                       PDF
                     </div>
                   </div>
                 </div>
                 
-                {/* Nota de placeholder */}
                 <p style={{ 
-                  fontSize: '11px', 
-                  color: '#9ca3af', 
+                  fontSize: '12px', 
+                  color: '#6b7280', 
                   textAlign: 'center', 
                   marginTop: '15px',
                   fontStyle: 'italic'
                 }}>
-                  🔌 Se conectará con los documentos reales próximamente
+                  💡 Haz clic en cualquier documento para descargarlo con la información de esta oferta
                 </p>
               </div>
 
