@@ -19,10 +19,10 @@ router.post("/registro", uploadFirma.single("firma_digital"), registrar);  // Lo
   router.get("/confirmar/:token", confirmarEmail);
 
   // Recuperar password
- router.post("/olvide-password", olvidePassword);
-router.post("/olvide-password/:token", nuevoPassword);
-// Obtener coordinadores
-router.get("/coordinadores", obtenerCoordinadores);
+  router.post("/olvide-password", olvidePassword);
+  router.post("/nuevo-password/:token", nuevoPassword);
+  // Obtener coordinadores
+  router.get("/coordinadores", obtenerCoordinadores);
 
   // Perfil protegido
   // router.get("/perfil", checkAuth, perfil);

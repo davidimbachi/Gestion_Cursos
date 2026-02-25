@@ -4,8 +4,10 @@ import generarToken from "../helpers/generarToken.js";
 import SolicitudRol from "../models/solicitud/SolicitudRol.js";
 import Rol from "../models/usuarios/Rol.js";
 import crypto from "crypto";
-import { sendResetPasswordEmail } from '../config/email.js';
+import { sendResetPasswordEmail,sendVerificationEmail } from '../config/email.js';
 
+
+// Registrar nuevo usuario
 
 // Registrar nuevo usuario
 const registrar = async (req, res) => {
@@ -26,14 +28,14 @@ const registrar = async (req, res) => {
       firma_digital,
     } = req.body;
 
-    // ✅ Validar contraseñas
+    //  Validar contraseñas
     if (password !== confirmPassword) {
       return res.status(400).json({
         msg: "Las contraseñas no coinciden",
       });
     }
 
-    // ✅ Verificar si ya existe email
+    //  Verificar si ya existe email
     const existeUsuario = await Usuario.findOne({ email });
 
     if (existeUsuario) {
@@ -42,7 +44,7 @@ const registrar = async (req, res) => {
       });
     }
 
-    // ✅ Buscar roles
+    //  Buscar roles
     const rolSolicitado = await Rol.findOne({ nombre: rol });
     const rolInvitado = await Rol.findOne({ nombre: "Invitado" });
 
@@ -102,18 +104,26 @@ const registrar = async (req, res) => {
       usuario: usuario._id,
       rolSolicitado: rolSolicitado._id,
     });
-
-    res.json({
-      msg: "Registro exitoso. Revisa tu correo para verificar tu cuenta.",
-      token: usuario.token_verificacion,
-    });
+    // Enviar correo de verificación
+        
+    try {
+      await sendVerificationEmail(usuario.email, usuario.token_verificacion);
+      res.json({
+        msg: "Registro exitoso. Revisa tu correo para verificar tu cuenta.",
+      });
+    } catch (error) {
+      console.error("Error enviando correo de verificación:", error);
+      res.json({
+        msg: "Registro exitoso, pero no se pudo enviar el correo de verificación. Contacta al administrador.",
+      });
+    }
 
   } catch (error) {
     console.log(error);
     res.status(500).json({ msg: "Error en el servidor" });
   }
 };
-
+    
 
 // ✅ Obtener coordinadores por tipo de programa
 const obtenerCoordinadores = async (req, res) => {
@@ -142,29 +152,46 @@ const obtenerCoordinadores = async (req, res) => {
   }
 };
 
-
 // Confirmar email
 const confirmarEmail = async (req, res) => {
   const { token } = req.params;
 
-  const usuario = await Usuario.findOne({
-    token_verificacion: token,
-  });
+  try {
+    // 1️⃣ Buscar usuario por token
+    const usuario = await Usuario.findOne({ token_verificacion: token });
 
-  if (!usuario) {
-    return res.status(404).json({ msg: "Token inválido" });
+    // 2️⃣ Si no se encuentra por token
+    if (!usuario) {
+      // Verificar si el token ya fue usado
+      const usuarioYaVerificado = await Usuario.findOne({
+        email_verificado: true,
+      });
+
+      if (usuarioYaVerificado) {
+        return res.status(200).json({
+          msg: "Este correo ya fue verificado anteriormente. Puedes iniciar sesión.",
+        });
+      }
+
+      return res.status(404).json({
+        msg: "El enlace es inválido o ha expirado",
+      });
+    }
+
+    // Confirmar email
+    usuario.email_verificado = true;
+    usuario.token_verificacion = null;
+    await usuario.save();
+
+    return res.json({
+      msg: "Email verificado correctamente. Ya puedes iniciar sesión.",
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ msg: "Error en el servidor" });
   }
-
-  usuario.email_verificado = true;
-  usuario.token_verificacion = null;
-
-  await usuario.save();
-
-  res.json({ msg: "Email verificado correctamente" });
 };
 
-
-// OLVIDÉ PASSWORD
 // OLVIDÉ PASSWORD
 const olvidePassword = async (req, res) => {
   const { email } = req.body;
@@ -194,22 +221,30 @@ const nuevoPassword = async (req, res) => {
   const { token } = req.params;
   const { password } = req.body;
 
-  const usuario = await Usuario.findOne({
-    token_reset: token,
-    reset_expires: { $gt: Date.now() },
-  });
+  try {
+    const usuario = await Usuario.findOne({
+      token_reset: token,
+      reset_expires: { $gt: Date.now() },
+    });
 
-  if (!usuario) {
-    return res.status(400).json({ msg: "Token inválido o expirado" });
+    if (!usuario) {
+      return res.status(400).json({ msg: "Token inválido o expirado" });
+    }
+
+    usuario.password = password;
+    usuario.token_reset = null;
+    usuario.reset_expires = null;
+
+    await usuario.save();
+
+    return res.json({ msg: "Contraseña actualizada correctamente" });
+
+  } catch (error) {
+    console.error("Error en nuevoPassword:", error);
+    return res.status(500).json({
+      msg: "Error al actualizar la contraseña",
+    });
   }
-
-  usuario.password = password;
-  usuario.token_reset = null;
-  usuario.reset_expires = null;
-
-  await usuario.save();
-
-  res.json({ msg: "Contraseña actualizada correctamente" });
 };
 
 
@@ -257,5 +292,5 @@ export {
   olvidePassword,
   nuevoPassword,
   autenticar,
-  obtenerCoordinadores, // ← AGREGADO
+  obtenerCoordinadores,
 };

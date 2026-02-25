@@ -12,29 +12,49 @@ const ResetPassword = () => {
   const [msg, setMsg] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (password !== confirmPassword) {
-      return setMsg({ type: "error", text: "Las contraseñas no coinciden." });
-    }
-    setMsg(null);
-    setLoading(true);
+const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  if (password !== confirmPassword) {
+    return setMsg({ type: "error", text: "Las contraseñas no coinciden." });
+  }
+
+  setMsg(null);
+  setLoading(true);
+
+  try {
+    const res = await fetch(`${API}/usuarios/nuevo-password/${token}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password }),
+    });
+
+    // 🔐 leer como texto primero
+    const text = await res.text();
+
+    let data;
     try {
-      const res = await fetch(`${API}/usuarios/nuevo-password/${token}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.msg);
-      setMsg({ type: "success", text: data.msg });
-      setTimeout(() => navigate("/login"), 2000);
-    } catch (error) {
-      setMsg({ type: "error", text: error.message });
-    } finally {
-      setLoading(false);
+      data = JSON.parse(text);
+    } catch {
+      throw new Error("Respuesta inválida del servidor");
     }
-  };
+
+    if (!res.ok) {
+      throw new Error(data.msg || "Error al actualizar la contraseña");
+    }
+
+    setMsg({ type: "success", text: data.msg });
+
+    setTimeout(() => {
+      navigate("/login");
+    }, 2000);
+
+  } catch (error) {
+    setMsg({ type: "error", text: error.message });
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="auth-wrap">

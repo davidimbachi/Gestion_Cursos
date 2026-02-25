@@ -12,6 +12,8 @@ import Admin          from './components/admin/admin';
 import SolicitudesAdmin from './components/admin/solicitudesAdmin';
 import { useState, useEffect } from "react";
 import ResetPassword from "./components/autentificacion/ResetPassword";
+import ConfirmarEmail from "./components/autentificacion/ConfirmarEmail";
+
 
 
 
@@ -121,6 +123,7 @@ function App() {
   return (
     <Router>
       <Routes>
+        <Route path="/confirmar/:token" element={<ConfirmarEmail />} /> 
         <Route path="/reset-password/:token" element={<ResetPassword />} />
         <Route path="/admin" element={<Admin user={usuarioData} 
           grupoNombre={usuarioData.rol}
