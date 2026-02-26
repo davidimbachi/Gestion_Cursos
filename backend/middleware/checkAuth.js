@@ -4,32 +4,47 @@ import Usuario from "../models/usuarios/Usuario.js";
 const checkAuth = async (req, res, next) => {
   let token;
 
-  // 🔹 1. Verificar si viene Authorization header
+  console.log('🔹 Headers recibidos:', req.headers);
+
   if (
     req.headers.authorization &&
     req.headers.authorization.startsWith("Bearer")
   ) {
     try {
-      // 🔹 2. Extraer token
       token = req.headers.authorization.split(" ")[1];
+      console.log('🔹 Token extraído:', token ? 'Sí hay token' : 'No hay token');
 
-      // 🔹 3. Verificar token
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      console.log('🔹 Token decodificado:', decoded);
 
-      // 🔹 4. Buscar usuario y traer su rol
       req.usuario = await Usuario.findById(decoded.id)
         .select("-password")
         .populate("rol");
 
+      console.log('🔹 Usuario encontrado:', req.usuario ? 'Sí' : 'No');
+      console.log('🔹 Datos del usuario:', req.usuario);
+
+      if (!req.usuario) {
+        return res.status(404).json({ msg: "Usuario no encontrado" });
+      }
+
+      // ✅ Agregar las propiedades adicionales
+      req.usuarioId = req.usuario._id;
+      req.rol = req.usuario.rol;
+      
+      console.log('✅ Usuario cargado:', req.usuarioId);
+      console.log('✅ Rol cargado:', req.rol);
+
       return next();
     } catch (error) {
-      return res.status(401).json({ msg: "Token inválido" });
+      console.error('❌ Error en checkAuth:', error.message);
+      return res.status(401).json({ msg: "Token inválido o expirado" });
     }
   }
 
-  // 🔹 5. Si no hay token
+  console.log('❌ No hay token en los headers');
   if (!token) {
-    return res.status(401).json({ msg: "No autorizado" });
+    return res.status(401).json({ msg: "No autorizado - Sin token" });
   }
 };
 
