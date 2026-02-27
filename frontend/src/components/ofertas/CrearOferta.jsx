@@ -47,8 +47,11 @@ const CrearOferta = () => {
   const [departamento, setDepartamento]   = useState('');
   const [municipios, setMunicipios]       = useState([]);
   const [municipio, setMunicipio]         = useState('');
+  const [corregimientos, setCorregimientos] = useState([]);
+  const [corregimiento, setCorregimiento] = useState('');
   const [ambiente, setAmbiente]           = useState('');
   const [direccion, setDireccion]         = useState('');
+
 
   const [horarios, setHorarios] = useState([]);
 
@@ -74,10 +77,47 @@ const CrearOferta = () => {
     axios.get(`${API}/ubicacion/departamentos`).then(r => setDepartamentos(r.data)).catch(console.error);
   }, []);
 
-  useEffect(() => {
-    if (!departamento) { setMunicipios([]); setMunicipio(''); return; }
-    axios.get(`${API}/ubicacion/municipios?departamento=${departamento}`).then(r => setMunicipios(r.data)).catch(console.error);
-  }, [departamento]);
+useEffect(() => {
+  if (!departamento) {
+    setMunicipios([]);
+    setMunicipio('');
+    return;
+  }
+
+  axios
+    .get(`${API}/ubicacion/municipios?departamento=${departamento}`)
+    .then(r => {
+      setMunicipios(r.data);
+
+      // ✅ AUTOSELECCIONAR PRIMER MUNICIPIO
+      if (r.data.length > 0) {
+        setMunicipio(r.data[0]._id);
+      }
+    })
+    .catch(console.error);
+
+}, [departamento]);
+
+useEffect(() => {
+  if (!municipio) {
+    setCorregimientos([]);
+    setCorregimiento('');
+    return;
+  }
+
+  axios
+    .get(`${API}/ubicacion/corregimientos?municipio=${municipio}`)
+    .then(r => {
+      setCorregimientos(r.data);
+
+      // ✅ seleccionar automáticamente
+      if (r.data.length > 0) {
+        setCorregimiento(r.data[0]._id);
+      }
+    })
+    .catch(console.error);
+
+}, [municipio]);
 
   const tabIndex = tabsConfig.findIndex(t => t.key === tabActiva);
   const irTab = (dir) => {
@@ -114,7 +154,7 @@ const CrearOferta = () => {
 
     setEnviando(true);
     try {
-      const lugarRes = await axios.post(`${API}/ubicacion/lugares`, { departamento, municipio, ambiente, direccion });
+      const lugarRes = await axios.post(`${API}/ubicacion/lugares`, { departamento, municipio, corregimiento,ambiente, direccion });
       await axios.post(`${API}/ofertas`, {
         programa: programaSeleccionado,
         modalidad_oferta: modalidadOferta,
@@ -390,6 +430,24 @@ const CrearOferta = () => {
                       {municipios.map(m => <option key={m._id} value={m._id}>{m.nombre}</option>)}
                     </select>
                     {errores.municipio && <span className="field-error">{errores.municipio}</span>}
+                  </div>
+
+                  <div className="form-group">
+                    <label>Corregimiento</label>
+                    <select
+                      className="form__select"
+                      value={corregimiento}
+                      onChange={e => setCorregimiento(e.target.value)}
+                      disabled={!municipio}
+                    >
+                      <option value="">Selecciona corregimiento</option>
+
+                      {corregimientos.map(c => (
+                        <option key={c._id} value={c._id}>
+                          {c.nombre}
+                        </option>
+                      ))}
+                    </select>
                   </div>
 
                   <div className="form-group">
