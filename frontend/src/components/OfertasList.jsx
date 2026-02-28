@@ -10,6 +10,7 @@ const OfertasList = () => {
   const [ofertaEditando, setOfertaEditando] = useState(null);
   const [formData, setFormData] = useState({});
   const [guardando, setGuardando] = useState(false);
+  const [enviando, setEnviando] = useState(false); // ← NUEVO: Estado para botón enviar
 
   useEffect(() => {
     cargarOfertas();
@@ -32,6 +33,56 @@ const OfertasList = () => {
       }
     } finally {
       setCargando(false);
+    }
+  };
+
+  // ← NUEVA FUNCIÓN: Enviar oferta a solicitud
+  const handleEnviarOferta = async () => {
+    if (!ofertaSeleccionada) return;
+    
+    if (!confirm('¿Estás seguro de enviar esta oferta a revisión del coordinador?\n\nUna vez enviada, no podrás editarla.')) {
+      return;
+    }
+    
+    try {
+      setEnviando(true);
+      const token = localStorage.getItem('token');
+      
+      const response = await fetch(`http://localhost:4000/api/ofertas/${ofertaSeleccionada._id}/enviar`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        // Actualizar la oferta en la lista
+        const ofertasActualizadas = ofertas.map(o => 
+          o._id === ofertaSeleccionada._id ? data.oferta : o
+        );
+        setOfertas(ofertasActualizadas);
+        setOfertaSeleccionada(data.oferta);
+        
+        if (window.mostrarNotificacion) {
+          window.mostrarNotificacion('success', '✅ Oferta enviada a revisión');
+        } else {
+          alert('✅ Oferta enviada a revisión del coordinador');
+        }
+      } else {
+        throw new Error(data.msg || 'Error al enviar');
+      }
+    } catch (error) {
+      console.error('❌ Error al enviar:', error);
+      if (window.mostrarNotificacion) {
+        window.mostrarNotificacion('error', `❌ ${error.message}`);
+      } else {
+        alert(`❌ Error: ${error.message}`);
+      }
+    } finally {
+      setEnviando(false);
     }
   };
 
@@ -156,7 +207,7 @@ const OfertasList = () => {
   return (
     <div className="dashboard-content" style={{ padding: '0', maxWidth: '100%' }}>
       {/* Header simplificado - Solo título y total */}
-      <div style={{ 
+      <div style={{
         background: 'linear-gradient(135deg, #0a3274 0%, #1e40af 100%)',
         padding: '30px',
         color: 'white',
@@ -171,9 +222,9 @@ const OfertasList = () => {
               Gestiona las ofertas de programas de formación
             </p>
           </div>
-          <div style={{ 
-            background: 'rgba(255,255,255,0.2)', 
-            padding: '15px 30px', 
+          <div style={{
+            background: 'rgba(255,255,255,0.2)',
+            padding: '15px 30px',
             borderRadius: '12px',
             backdropFilter: 'blur(10px)'
           }}>
@@ -185,17 +236,16 @@ const OfertasList = () => {
 
       {/* Contenido principal - Vista dividida */}
       <div style={{ display: 'flex', height: 'calc(100vh - 180px)', minHeight: '500px' }}>
-        
         {/* Lista de ofertas - 40% del ancho */}
-        <div style={{ 
-          width: '40%', 
+        <div style={{
+          width: '40%',
           borderRight: '1px solid #e5e7eb',
           overflowY: 'auto',
           background: '#f9fafb',
           padding: '20px'
         }}>
-          <h3 style={{ 
-            margin: '0 0 20px 0', 
+          <h3 style={{
+            margin: '0 0 20px 0',
             color: '#0a3274',
             fontSize: '16px',
             fontWeight: '600',
@@ -206,10 +256,9 @@ const OfertasList = () => {
             <i className="fas fa-list"></i>
             Listado de Ofertas
           </h3>
-
           {ofertas.length === 0 ? (
-            <div style={{ 
-              textAlign: 'center', 
+            <div style={{
+              textAlign: 'center',
               padding: '40px 20px',
               color: '#6b7280'
             }}>
@@ -219,20 +268,20 @@ const OfertasList = () => {
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {ofertas.map((oferta) => (
-                <div 
+                <div
                   key={oferta._id}
                   onClick={() => setOfertaSeleccionada(oferta)}
                   style={{
-                    background: ofertaSeleccionada?._id === oferta._id 
-                      ? 'linear-gradient(135deg, #0a3274, #1e40af)' 
+                    background: ofertaSeleccionada?._id === oferta._id
+                      ? 'linear-gradient(135deg, #0a3274, #1e40af)'
                       : 'white',
                     color: ofertaSeleccionada?._id === oferta._id ? 'white' : '#1f2937',
                     padding: '18px',
                     borderRadius: '10px',
                     cursor: 'pointer',
                     transition: 'all 0.3s ease',
-                    boxShadow: ofertaSeleccionada?._id === oferta._id 
-                      ? '0 4px 15px rgba(10, 50, 116, 0.3)' 
+                    boxShadow: ofertaSeleccionada?._id === oferta._id
+                      ? '0 4px 15px rgba(10, 50, 116, 0.3)'
                       : '0 2px 8px rgba(0,0,0,0.08)',
                     border: `2px solid ${ofertaSeleccionada?._id === oferta._id ? '#0a3274' : 'transparent'}`
                   }}
@@ -252,21 +301,35 @@ const OfertasList = () => {
                   <div style={{ fontWeight: '600', fontSize: '14px', marginBottom: '8px' }}>
                     {oferta.codigo_ficha || 'Sin ficha'}
                   </div>
-                  
                   <div style={{ fontSize: '13px', marginBottom: '6px', opacity: 0.9 }}>
                     <i className="fas fa-book me-1"></i>
                     {oferta.programa?.nombre || 'Sin programa'}
                   </div>
-                  
                   <div style={{ fontSize: '12px', opacity: 0.8 }}>
                     <i className="fas fa-calendar me-1"></i>
                     Inicio: {formatearFecha(oferta.fecha_inicio)}
                   </div>
-                  
                   <div style={{ fontSize: '12px', opacity: 0.8, marginTop: '6px' }}>
                     <i className="fas fa-users me-1"></i>
                     {oferta.cupo} cupos disponibles
                   </div>
+                  {/* Badge de estado */}
+                  {oferta.estado_enviada && (
+                    <div style={{
+                      marginTop: '8px',
+                      fontSize: '11px',
+                      background: 'rgba(34, 197, 94, 0.2)',
+                      color: '#16a34a',
+                      padding: '4px 8px',
+                      borderRadius: '4px',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}>
+                      <i className="fas fa-check-circle"></i>
+                      Enviada
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -274,8 +337,8 @@ const OfertasList = () => {
         </div>
 
         {/* Detalle de oferta seleccionada - 60% del ancho */}
-        <div style={{ 
-          width: '60%', 
+        <div style={{
+          width: '60%',
           overflowY: 'auto',
           padding: '30px',
           background: 'white',
@@ -283,32 +346,37 @@ const OfertasList = () => {
         }}>
           {ofertaSeleccionada ? (
             <div>
-              
               {/* === BOTÓN EDITAR === */}
               <button
                 onClick={() => abrirEdicion(ofertaSeleccionada)}
+                disabled={ofertaSeleccionada.estado_enviada}
                 style={{
                   position: 'absolute',
                   top: '25px',
                   right: '30px',
-                  background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                  background: ofertaSeleccionada.estado_enviada 
+                    ? '#9ca3af' 
+                    : 'linear-gradient(135deg, #f59e0b, #d97706)',
                   color: 'white',
                   border: 'none',
                   padding: '10px 20px',
                   borderRadius: '8px',
                   fontSize: '14px',
                   fontWeight: '600',
-                  cursor: 'pointer',
+                  cursor: ofertaSeleccionada.estado_enviada ? 'not-allowed' : 'pointer',
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '8px',
                   boxShadow: '0 2px 6px rgba(245, 158, 11, 0.3)',
                   transition: 'all 0.3s ease',
-                  zIndex: 10
+                  zIndex: 10,
+                  opacity: ofertaSeleccionada.estado_enviada ? 0.6 : 1
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-2px)';
-                  e.currentTarget.style.boxShadow = '0 4px 10px rgba(245, 158, 11, 0.4)';
+                  if (!ofertaSeleccionada.estado_enviada) {
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                    e.currentTarget.style.boxShadow = '0 4px 10px rgba(245, 158, 11, 0.4)';
+                  }
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.transform = 'translateY(0)';
@@ -320,7 +388,7 @@ const OfertasList = () => {
               </button>
 
               {/* Header del detalle */}
-              <div style={{ 
+              <div style={{
                 background: 'linear-gradient(135deg, #f0f9ff, #e0f2fe)',
                 padding: '25px',
                 borderRadius: '12px',
@@ -330,8 +398,8 @@ const OfertasList = () => {
               }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                   <div>
-                    <h3 style={{ 
-                      margin: '0 0 10px 0', 
+                    <h3 style={{
+                      margin: '0 0 10px 0',
                       color: '#0a3274',
                       fontSize: '24px',
                       fontWeight: '600'
@@ -344,9 +412,9 @@ const OfertasList = () => {
 
               {/* === SECCIÓN: INFORMACIÓN DEL PROGRAMA === */}
               <div style={{ marginBottom: '25px' }}>
-                <h4 style={{ 
-                  color: '#0a3274', 
-                  fontSize: '16px', 
+                <h4 style={{
+                  color: '#0a3274',
+                  fontSize: '16px',
                   fontWeight: '600',
                   marginBottom: '15px',
                   display: 'flex',
@@ -356,9 +424,8 @@ const OfertasList = () => {
                   <i className="fas fa-graduation-cap"></i>
                   Información del Programa
                 </h4>
-                
                 {/* Tarjeta principal del programa */}
-                <div style={{ 
+                <div style={{
                   background: 'linear-gradient(135deg, #f0f9ff, #e0f2fe)',
                   padding: '20px',
                   borderRadius: '12px',
@@ -373,7 +440,6 @@ const OfertasList = () => {
                       {ofertaSeleccionada.programa?.nombre || 'Sin programa'}
                     </div>
                   </div>
-                  
                   <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
                     <div style={{ flex: '1 1 150px' }}>
                       <div style={{ fontSize: '11px', color: '#6b7280', textTransform: 'uppercase', fontWeight: '700', marginBottom: '6px' }}>
@@ -383,7 +449,6 @@ const OfertasList = () => {
                         v{ofertaSeleccionada.programa?.version || 'N/A'}
                       </div>
                     </div>
-                    
                     <div style={{ flex: '1 1 150px' }}>
                       <div style={{ fontSize: '11px', color: '#6b7280', textTransform: 'uppercase', fontWeight: '700', marginBottom: '6px' }}>
                         <i className="fas fa-clock me-1"></i> Duración Total
@@ -394,12 +459,11 @@ const OfertasList = () => {
                     </div>
                   </div>
                 </div>
-                
                 {/* Nivel, línea tecnológica y red */}
-                {(ofertaSeleccionada.programa?.nivel_formacion || 
-                  ofertaSeleccionada.programa?.linea_tecnologica || 
+                {(ofertaSeleccionada.programa?.nivel_formacion ||
+                  ofertaSeleccionada.programa?.linea_tecnologica ||
                   ofertaSeleccionada.programa?.red_conocimiento) && (
-                  <div style={{ 
+                  <div style={{
                     marginTop: '15px',
                     padding: '15px',
                     background: '#fff',
@@ -416,7 +480,6 @@ const OfertasList = () => {
                         </span>
                       </div>
                     )}
-                    
                     {ofertaSeleccionada.programa?.linea_tecnologica && (
                       <div style={{ marginBottom: '10px', fontSize: '13px' }}>
                         <strong style={{ color: '#0a3274' }}>
@@ -427,7 +490,6 @@ const OfertasList = () => {
                         </span>
                       </div>
                     )}
-                    
                     {ofertaSeleccionada.programa?.red_conocimiento && (
                       <div style={{ fontSize: '13px' }}>
                         <strong style={{ color: '#0a3274' }}>
@@ -444,9 +506,9 @@ const OfertasList = () => {
 
               {/* === SECCIÓN: UBICACIÓN === */}
               <div style={{ marginBottom: '25px' }}>
-                <h4 style={{ 
-                  color: '#0a3274', 
-                  fontSize: '16px', 
+                <h4 style={{
+                  color: '#0a3274',
+                  fontSize: '16px',
                   fontWeight: '600',
                   marginBottom: '15px',
                   display: 'flex',
@@ -456,15 +518,14 @@ const OfertasList = () => {
                   <i className="fas fa-map-marker-alt"></i>
                   Ubicación
                 </h4>
-                
-                <div style={{ 
+                <div style={{
                   background: 'linear-gradient(135deg, #f0f9ff, #e0f2fe)',
-                  padding: '20px', 
+                  padding: '20px',
                   borderRadius: '12px',
                   border: '2px solid #3b82f6'
                 }}>
                   {/* Centro Regional SENA */}
-                  <div style={{ 
+                  <div style={{
                     background: 'linear-gradient(135deg, #0a3274, #1e40af)',
                     color: 'white',
                     padding: '18px 24px',
@@ -475,16 +536,16 @@ const OfertasList = () => {
                     gap: '15px',
                     boxShadow: '0 4px 12px rgba(10, 50, 116, 0.3)'
                   }}>
-                    <img 
-                      src="/img/logo_sena.png" 
-                      alt="SENA" 
-                      style={{ 
-                        width: '50px', 
-                        height: '50px', 
-                        background: 'white', 
+                    <img
+                      src="/img/logo_sena.png"
+                      alt="SENA"
+                      style={{
+                        width: '50px',
+                        height: '50px',
+                        background: 'white',
                         borderRadius: '8px',
                         padding: '5px'
-                      }} 
+                      }}
                       onError={(e) => {
                         e.target.style.display = 'none';
                       }}
@@ -498,10 +559,9 @@ const OfertasList = () => {
                       </div>
                     </div>
                   </div>
-                  
                   {/* Sede específica */}
                   {ofertaSeleccionada.lugar?.ambiente && (
-                    <div style={{ 
+                    <div style={{
                       background: 'white',
                       padding: '12px 16px',
                       borderRadius: '8px',
@@ -522,12 +582,11 @@ const OfertasList = () => {
                       </div>
                     </div>
                   )}
-                  
                   {/* Dirección */}
                   {ofertaSeleccionada.lugar?.direccion && (
-                    <div style={{ 
-                      fontSize: '14px', 
-                      color: '#4b5563', 
+                    <div style={{
+                      fontSize: '14px',
+                      color: '#4b5563',
                       marginBottom: '15px',
                       padding: '12px',
                       background: 'white',
@@ -546,7 +605,6 @@ const OfertasList = () => {
                       </div>
                     </div>
                   )}
-                  
                   {/* Departamento y Municipio */}
                   <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
                     {ofertaSeleccionada.lugar?.departamento?.nombre && (
@@ -570,7 +628,6 @@ const OfertasList = () => {
                         </div>
                       </div>
                     )}
-                    
                     {ofertaSeleccionada.lugar?.municipio?.nombre && (
                       <div style={{
                         background: 'linear-gradient(135deg, #10b981, #059669)',
@@ -596,16 +653,16 @@ const OfertasList = () => {
                 </div>
               </div>
 
-              {/* ✅ CAMBIO: Sección "Detalles de la Oferta" sin el nombre del programa duplicado */}
-              <div style={{ 
+              {/* ✅ SECCIÓN: Detalles de la Oferta */}
+              <div style={{
                 background: 'linear-gradient(135deg, #f0f9ff, #e0f2fe)',
                 padding: '25px',
                 borderRadius: '12px',
                 marginBottom: '25px'
               }}>
-                <h4 style={{ 
-                  color: '#0a3274', 
-                  fontSize: '16px', 
+                <h4 style={{
+                  color: '#0a3274',
+                  fontSize: '16px',
                   fontWeight: '600',
                   marginBottom: '20px',
                   display: 'flex',
@@ -615,7 +672,6 @@ const OfertasList = () => {
                   <i className="fas fa-chart-bar"></i>
                   Detalles de la Oferta
                 </h4>
-                
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
                   <div>
                     <div style={{ fontSize: '11px', color: '#6b7280', textTransform: 'uppercase', fontWeight: '700', marginBottom: '6px' }}>
@@ -625,7 +681,6 @@ const OfertasList = () => {
                       {ofertaSeleccionada.modalidad_oferta}
                     </div>
                   </div>
-                  
                   <div>
                     <div style={{ fontSize: '11px', color: '#6b7280', textTransform: 'uppercase', fontWeight: '700', marginBottom: '6px' }}>
                       Tipo
@@ -634,7 +689,6 @@ const OfertasList = () => {
                       {ofertaSeleccionada.tipo_oferta}
                     </div>
                   </div>
-                  
                   <div>
                     <div style={{ fontSize: '11px', color: '#6b7280', textTransform: 'uppercase', fontWeight: '700', marginBottom: '6px' }}>
                       Cupos
@@ -647,16 +701,16 @@ const OfertasList = () => {
               </div>
 
               {/* === SECCIÓN: CRONOGRAMA === */}
-              <div style={{ 
+              <div style={{
                 background: '#fff',
                 padding: '25px',
                 borderRadius: '12px',
                 border: '2px solid #e5e7eb',
                 marginBottom: '20px'
               }}>
-                <h4 style={{ 
-                  color: '#0a3274', 
-                  fontSize: '16px', 
+                <h4 style={{
+                  color: '#0a3274',
+                  fontSize: '16px',
                   fontWeight: '600',
                   marginBottom: '20px',
                   display: 'flex',
@@ -666,11 +720,10 @@ const OfertasList = () => {
                   <i className="fas fa-calendar-alt"></i>
                   Cronograma
                 </h4>
-                
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                  <div style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
                     gap: '15px',
                     padding: '15px',
                     background: '#f0fdf4',
@@ -687,10 +740,9 @@ const OfertasList = () => {
                       </div>
                     </div>
                   </div>
-                  
-                  <div style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
                     gap: '15px',
                     padding: '15px',
                     background: '#fffbeb',
@@ -707,11 +759,10 @@ const OfertasList = () => {
                       </div>
                     </div>
                   </div>
-                  
                   {ofertaSeleccionada.fecha_terminacion && (
-                    <div style={{ 
-                      display: 'flex', 
-                      alignItems: 'center', 
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
                       gap: '15px',
                       padding: '15px',
                       background: '#fef2f2',
@@ -732,17 +783,17 @@ const OfertasList = () => {
                 </div>
               </div>
 
-              {/* === SECCIÓN: DOCUMENTOS (FUNCIONALES) === */}
-              <div style={{ 
+              {/* === SECCIÓN: DOCUMENTOS === */}
+              <div style={{
                 background: '#fff',
                 padding: '25px',
                 borderRadius: '12px',
                 border: '2px solid #e5e7eb',
                 marginBottom: '20px'
               }}>
-                <h4 style={{ 
-                  color: '#0a3274', 
-                  fontSize: '16px', 
+                <h4 style={{
+                  color: '#0a3274',
+                  fontSize: '16px',
                   fontWeight: '600',
                   marginBottom: '20px',
                   display: 'flex',
@@ -752,16 +803,15 @@ const OfertasList = () => {
                   <i className="fas fa-file-pdf"></i>
                   Documentos de la Oferta
                 </h4>
-                
                 {/* Grid de documentos funcionales */}
-                <div style={{ 
-                  display: 'grid', 
-                  gridTemplateColumns: 'repeat(3, 1fr)', 
-                  gap: '15px' 
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(3, 1fr)',
+                  gap: '15px'
                 }}>
                   {/* Documento 1: Ficha de caracterización */}
-                  <div 
-                    onClick={() => {}}
+                  <div
+                    onClick={() => { }}
                     style={{
                       background: 'linear-gradient(135deg, #fef2f2, #fee2e2)',
                       padding: '25px 15px',
@@ -781,13 +831,13 @@ const OfertasList = () => {
                       e.currentTarget.style.boxShadow = '0 2px 8px rgba(239, 68, 68, 0.1)';
                     }}
                   >
-                    <i className="fas fa-file-pdf" style={{ 
-                      fontSize: '48px', 
+                    <i className="fas fa-file-pdf" style={{
+                      fontSize: '48px',
                       color: '#dc2626',
                       marginBottom: '12px'
                     }}></i>
-                    <div style={{ 
-                      fontSize: '13px', 
+                    <div style={{
+                      fontSize: '13px',
                       color: '#1f2937',
                       fontWeight: '600',
                       marginTop: '8px',
@@ -795,18 +845,17 @@ const OfertasList = () => {
                     }}>
                       Ficha de caracterización
                     </div>
-                    <div style={{ 
-                      fontSize: '11px', 
+                    <div style={{
+                      fontSize: '11px',
                       color: '#6b7280',
                       marginTop: '6px'
                     }}>
                       PDF
                     </div>
                   </div>
-
                   {/* Documento 2: Ver Masivo Aprendices */}
-                  <div 
-                    onClick={() => {}}
+                  <div
+                    onClick={() => { }}
                     style={{
                       background: 'linear-gradient(135deg, #f0fdf4, #dcfce7)',
                       padding: '25px 15px',
@@ -826,13 +875,13 @@ const OfertasList = () => {
                       e.currentTarget.style.boxShadow = '0 2px 8px rgba(34, 197, 94, 0.1)';
                     }}
                   >
-                    <i className="fas fa-file-excel" style={{ 
-                      fontSize: '48px', 
+                    <i className="fas fa-file-excel" style={{
+                      fontSize: '48px',
                       color: '#16a34a',
                       marginBottom: '12px'
                     }}></i>
-                    <div style={{ 
-                      fontSize: '13px', 
+                    <div style={{
+                      fontSize: '13px',
                       color: '#1f2937',
                       fontWeight: '600',
                       marginTop: '8px',
@@ -840,18 +889,17 @@ const OfertasList = () => {
                     }}>
                       Ver Masivo Aprendices
                     </div>
-                    <div style={{ 
-                      fontSize: '11px', 
+                    <div style={{
+                      fontSize: '11px',
                       color: '#6b7280',
                       marginTop: '6px'
                     }}>
                       Excel/CSV
                     </div>
                   </div>
-
                   {/* Documento 3: Documentos de identificación */}
-                  <div 
-                    onClick={() => {}}
+                  <div
+                    onClick={() => { }}
                     style={{
                       background: 'linear-gradient(135deg, #f3f4f6, #e5e7eb)',
                       padding: '25px 15px',
@@ -871,13 +919,13 @@ const OfertasList = () => {
                       e.currentTarget.style.boxShadow = '0 2px 8px rgba(107, 114, 128, 0.1)';
                     }}
                   >
-                    <i className="fas fa-id-card" style={{ 
-                      fontSize: '48px', 
+                    <i className="fas fa-id-card" style={{
+                      fontSize: '48px',
                       color: '#6b7280',
                       marginBottom: '12px'
                     }}></i>
-                    <div style={{ 
-                      fontSize: '13px', 
+                    <div style={{
+                      fontSize: '13px',
                       color: '#1f2937',
                       fontWeight: '600',
                       marginTop: '8px',
@@ -885,8 +933,8 @@ const OfertasList = () => {
                     }}>
                       Documentos de identificación
                     </div>
-                    <div style={{ 
-                      fontSize: '11px', 
+                    <div style={{
+                      fontSize: '11px',
                       color: '#6b7280',
                       marginTop: '6px'
                     }}>
@@ -894,11 +942,10 @@ const OfertasList = () => {
                     </div>
                   </div>
                 </div>
-                
-                <p style={{ 
-                  fontSize: '12px', 
-                  color: '#6b7280', 
-                  textAlign: 'center', 
+                <p style={{
+                  fontSize: '12px',
+                  color: '#6b7280',
+                  textAlign: 'center',
                   marginTop: '15px',
                   fontStyle: 'italic'
                 }}>
@@ -906,20 +953,87 @@ const OfertasList = () => {
                 </p>
               </div>
 
-              {/* === SECCIÓN: TOKEN DE INSCRIPCIÓN === */}
+              {/* === ESPACIO === */}
+              <div style={{ height: '20px' }}></div>
+
+              {/* === BOTÓN ENVIAR (NUEVO) === */}
+              {!ofertaSeleccionada.estado_enviada ? (
+                <button
+                  onClick={handleEnviarOferta}
+                  disabled={enviando}
+                  style={{
+                    width: '100%',
+                    background: 'linear-gradient(135deg, #10b981, #059669)',
+                    color: 'white',
+                    border: 'none',
+                    padding: '15px 30px',
+                    borderRadius: '10px',
+                    fontSize: '16px',
+                    fontWeight: '700',
+                    cursor: enviando ? 'not-allowed' : 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '12px',
+                    boxShadow: '0 4px 15px rgba(16, 185, 129, 0.3)',
+                    transition: 'all 0.3s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!enviando) {
+                      e.currentTarget.style.transform = 'translateY(-2px)';
+                      e.currentTarget.style.boxShadow = '0 6px 20px rgba(16, 185, 129, 0.4)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = '0 4px 15px rgba(16, 185, 129, 0.3)';
+                  }}
+                >
+                  {enviando ? (
+                    <>
+                      <i className="fas fa-spinner fa-spin"></i>
+                      Enviando...
+                    </>
+                  ) : (
+                    <>
+                      <i className="fas fa-paper-plane"></i>
+                      Enviar a Revisión del Coordinador
+                    </>
+                  )}
+                </button>
+              ) : (
+                <div style={{
+                  background: 'linear-gradient(135deg, #d1fae5, #a7f3d0)',
+                  padding: '20px',
+                  borderRadius: '10px',
+                  textAlign: 'center',
+                  border: '2px solid #10b981'
+                }}>
+                  <i className="fas fa-check-circle" style={{ fontSize: '32px', color: '#10b981', marginBottom: '10px' }}></i>
+                  <div style={{ fontSize: '16px', fontWeight: '700', color: '#065f46' }}>
+                    ✅ Esta oferta ya fue enviada a revisión
+                  </div>
+                  <div style={{ fontSize: '13px', color: '#047857', marginTop: '5px' }}>
+                    El coordinador la está evaluando
+                  </div>
+                </div>
+              )}
+
+              {/* === TOKEN DE INSCRIPCIÓN === */}
               {ofertaSeleccionada.token_inscripcion && (
-                <div style={{ 
+                <div style={{
                   background: 'linear-gradient(135deg, #eff6ff, #dbeafe)',
                   padding: '20px',
                   borderRadius: '12px',
                   border: '2px solid #3b82f6',
-                  boxShadow: '0 2px 8px rgba(59, 130, 246, 0.2)'
+                  boxShadow: '0 2px 8px rgba(59, 130, 246, 0.2)',
+                  marginTop: '20px'
                 }}>
-                  <div style={{ 
-                    fontSize: '12px', 
-                    color: '#1e40af', 
-                    fontWeight: '700', 
-                    textTransform: 'uppercase', 
+                  <div style={{
+                    fontSize: '12px',
+                    color: '#1e40af',
+                    fontWeight: '700',
+                    textTransform: 'uppercase',
                     marginBottom: '10px',
                     display: 'flex',
                     alignItems: 'center',
@@ -928,8 +1042,7 @@ const OfertasList = () => {
                     <i className="fas fa-link"></i>
                     Enlace de Inscripción
                   </div>
-                  
-                  <a 
+                  <a
                     href={`http://localhost:3000/ofertas`}
                     target="_blank"
                     rel="noopener noreferrer"
@@ -963,7 +1076,6 @@ const OfertasList = () => {
                       http://localhost:3000/ofertas/{ofertaSeleccionada.token_inscripcion}
                     </span>
                   </a>
-                  
                   <button
                     onClick={() => {
                       const link = `http://localhost:3000/ofertas`;
@@ -1019,8 +1131,8 @@ const OfertasList = () => {
               )}
             </div>
           ) : (
-            <div style={{ 
-              textAlign: 'center', 
+            <div style={{
+              textAlign: 'center',
               padding: '60px 20px',
               color: '#6b7280'
             }}>
@@ -1057,7 +1169,6 @@ const OfertasList = () => {
             <h3 style={{ margin: '0 0 20px 0', color: '#0a3274', fontSize: '20px', fontWeight: '600' }}>
               <i className="fas fa-edit me-2"></i>Editar Oferta
             </h3>
-
             <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
               <div>
                 <label style={{ display: 'block', marginBottom: '5px', fontWeight: '600', color: '#1f2937', fontSize: '13px' }}>
@@ -1066,7 +1177,6 @@ const OfertasList = () => {
                 <input type="text" name="codigo_ficha" value={formData.codigo_ficha || ''} onChange={handleInputChange}
                   style={{ width: '100%', padding: '10px', border: '2px solid #e5e7eb', borderRadius: '6px', fontSize: '14px' }} />
               </div>
-
               <div>
                 <label style={{ display: 'block', marginBottom: '5px', fontWeight: '600', color: '#1f2937', fontSize: '13px' }}>
                   <i className="fas fa-users me-1"></i> Cupos
@@ -1074,7 +1184,6 @@ const OfertasList = () => {
                 <input type="number" name="cupo" value={formData.cupo || ''} onChange={handleInputChange}
                   style={{ width: '100%', padding: '10px', border: '2px solid #e5e7eb', borderRadius: '6px', fontSize: '14px' }} />
               </div>
-
               <div>
                 <label style={{ display: 'block', marginBottom: '5px', fontWeight: '600', color: '#1f2937', fontSize: '13px' }}>
                   <i className="fas fa-calendar me-1"></i> Fecha de Inicio
@@ -1082,7 +1191,6 @@ const OfertasList = () => {
                 <input type="date" name="fecha_inicio" value={formData.fecha_inicio || ''} onChange={handleInputChange}
                   style={{ width: '100%', padding: '10px', border: '2px solid #e5e7eb', borderRadius: '6px', fontSize: '14px' }} />
               </div>
-
               <div>
                 <label style={{ display: 'block', marginBottom: '5px', fontWeight: '600', color: '#1f2937', fontSize: '13px' }}>
                   <i className="fas fa-calendar-check me-1"></i> Fecha Límite de Inscripción
@@ -1090,7 +1198,6 @@ const OfertasList = () => {
                 <input type="date" name="fecha_inscripcion" value={formData.fecha_inscripcion || ''} onChange={handleInputChange}
                   style={{ width: '100%', padding: '10px', border: '2px solid #e5e7eb', borderRadius: '6px', fontSize: '14px' }} />
               </div>
-
               <div>
                 <label style={{ display: 'block', marginBottom: '5px', fontWeight: '600', color: '#1f2937', fontSize: '13px' }}>
                   <i className="fas fa-graduation-cap me-1"></i> Modalidad
@@ -1103,7 +1210,6 @@ const OfertasList = () => {
                   <option value="Mixta">Mixta</option>
                 </select>
               </div>
-
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px', background: '#f3f4f6', borderRadius: '6px' }}>
                 <input type="checkbox" name="estado_enviada" checked={formData.estado_enviada || false} onChange={handleInputChange} id="estado_enviada" style={{ width: '18px', height: '18px' }} />
                 <label htmlFor="estado_enviada" style={{ fontWeight: '600', color: '#1f2937', fontSize: '14px', cursor: 'pointer' }}>
@@ -1111,7 +1217,6 @@ const OfertasList = () => {
                 </label>
               </div>
             </div>
-
             <div style={{ display: 'flex', gap: '10px', marginTop: '25px', justifyContent: 'flex-end' }}>
               <button onClick={cerrarEdicion} disabled={guardando}
                 style={{ background: '#6b7280', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '6px', fontSize: '14px', fontWeight: '600', cursor: guardando ? 'not-allowed' : 'pointer', opacity: guardando ? 0.6 : 1 }}>

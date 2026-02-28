@@ -1,4 +1,5 @@
 import Oferta from "../models/ofertas/oferta/oferta.js";
+import Solicitud from "../models/solicitud/Solicitud.js";
 import { v4 as uuidv4 } from "uuid";
 
 
@@ -7,6 +8,7 @@ const crearOferta = async (req, res) => {
   try {
     const datos = req.body;
 
+    datos.usuario = req.usuarioId;
     // Generar un token único automáticamente
     datos.token_inscripcion = uuidv4();
 
@@ -23,7 +25,7 @@ const crearOferta = async (req, res) => {
 };
 
 
-// Listar ofertas-----
+// Listar ofertas ----------------------------------
 const listarOfertas = async (req, res) => {
   try {
     // ✅ Verificar que haya un usuario autenticado
@@ -31,8 +33,11 @@ const listarOfertas = async (req, res) => {
       return res.status(401).json({ msg: "No autorizado" });
     }
 
-    // ✅ Filtrar: SOLO ofertas del usuario actual
-    const ofertas = await Oferta.find({ usuario: req.usuario._id })
+    // ✅ Filtrar: SOLO ofertas del usuario actual que NO han sido enviadas
+    const ofertas = await Oferta.find({ 
+      usuario: req.usuario._id,
+      estado_enviada: false  // ← CAMBIO CLAVE: Solo ofertas NO enviadas
+    })
       .populate("usuario", "nombre email username")
       .populate({
         path: "programa",
@@ -43,7 +48,6 @@ const listarOfertas = async (req, res) => {
           { path: "red_conocimiento", select: "nombre" }
         ]
       })
-      .populate("modalidad_programa", "nombre")
       .populate({
         path: "lugar",
         select: "ambiente direccion",
@@ -57,10 +61,11 @@ const listarOfertas = async (req, res) => {
       .populate("programa_especial", "nombre")
       .sort({ createdAt: -1 });
     
-    console.log(`📊 Ofertas de ${req.usuario.nombre}: ${ofertas.length} encontradas`);
+    console.log(`📊 Ofertas de ${req.usuario.username}: ${ofertas.length} encontradas`);
     
     res.json(ofertas);
   } catch (error) {
+    console.error('❌ ERROR en listarOfertas:', error.message);
     res.status(500).json({ 
       msg: "Error al listar las ofertas", 
       error: error.message 
@@ -68,7 +73,65 @@ const listarOfertas = async (req, res) => {
   }
 };
 
-// actilaiza oferta
+
+// Enviar oferta a solicitud (para revisión del coordinador)
+const enviarOferta = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // ✅ Buscar la oferta
+    const oferta = await Oferta.findById(id);
+    
+    if (!oferta) {
+      return res.status(404).json({ msg: "Oferta no encontrada" });
+    }
+    
+    // ✅ Verificar que sea del usuario que la envía
+    if (oferta.usuario.toString() !== req.usuario._id.toString()) {
+      return res.status(403).json({ msg: "No tienes permiso para enviar esta oferta" });
+    }
+    
+    // ✅ Verificar que no haya sido enviada ya
+    if (oferta.estado_enviada) {
+      return res.status(400).json({ msg: "Esta oferta ya fue enviada" });
+    }
+    
+    // ✅ Actualizar estado a "enviada"
+    oferta.estado_enviada = true;
+    await oferta.save();
+    
+    // ✅ Crear la solicitud para revisión del coordinador
+    const nuevaSolicitud = new Solicitud({
+      oferta: oferta._id,
+      usuario: req.usuario._id,
+      coordinador: req.usuario.coordinadorAsignado,
+      estado: 'pendiente', // pendiente, aprobada, rechazada
+      codigo_ficha: oferta.codigo_ficha,
+      programa: oferta.programa,
+      fecha_inicio: oferta.fecha_inicio,
+      fecha_terminacion: oferta.fecha_terminacion,
+      cupo: oferta.cupo
+    });
+    
+    await nuevaSolicitud.save();
+    
+    res.json({ 
+      msg: "✅ Oferta enviada a revisión", 
+      oferta,
+      solicitud: nuevaSolicitud 
+    });
+    
+  } catch (error) {
+    console.error('❌ ERROR en enviarOferta:', error.message);
+    res.status(500).json({ 
+      msg: "Error al enviar la oferta", 
+      error: error.message 
+    });
+  }
+};
+
+
+// Actualiza oferta -----------------------------------
 export const actualizarOferta = async (req, res) => {
   try {
     const oferta = await Oferta.findById(req.params.id).populate('programa');
@@ -105,4 +168,6 @@ export const actualizarOferta = async (req, res) => {
   }
 };
 
-export { crearOferta, listarOfertas };
+
+// ✅ EXPORTACIONES
+export { crearOferta, listarOfertas, enviarOferta };
