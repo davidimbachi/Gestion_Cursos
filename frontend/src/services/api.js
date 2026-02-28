@@ -52,20 +52,43 @@ export const enviarOferta = async (id) => {
 };
 
 // 🔹 Listar solicitudes del instructor (ofertas YA enviadas)
+// ahora coincide con las rutas definidas en el servidor (/api/solicitudes)
 export const listarSolicitudesInstructor = async () => {
-  const respuesta = await api.get('/solicitudes-ofertas/mis-solicitudes');
+  const respuesta = await api.get('/solicitudes/mis-ofertas');
   return respuesta.data;
 };
 
 // 🔹 Listar solicitudes para coordinador
 export const listarSolicitudesCoordinador = async () => {
-  const respuesta = await api.get('/solicitudes-ofertas/coordinador');
+  const respuesta = await api.get('/solicitudes/coordinador');
   return respuesta.data;
 };
 
-// 🔹 Aprobar/rechazar solicitud
-export const actualizarEstadoSolicitud = async (id, estado) => {
-  const respuesta = await api.put(`/solicitudes-ofertas/${id}/estado`, { estado });
+// 🔹 Aprobar/rechazar solicitud (admin/coordinador)
+// el servidor usa rutas separadas para aprobar/rechazar
+export const aprobarSolicitud = async (id) => {
+  const respuesta = await api.put(`/solicitudes/${id}/aprobar`);
+  return respuesta.data;
+};
+
+export const rechazarSolicitud = async (id) => {
+  const respuesta = await api.put(`/solicitudes/${id}/rechazar`);
+  return respuesta.data;
+};
+
+// ── Solicitudes de rol (Admin) ──
+export const listarSolicitudesRol = async () => {
+  const respuesta = await api.get('/solicitudes/roles');
+  return respuesta.data;
+};
+
+export const aprobarSolicitudRol = async (id) => {
+  const respuesta = await api.put(`/solicitudes/roles/aprobar/${id}`);
+  return respuesta.data;
+};
+
+export const rechazarSolicitudRol = async (id) => {
+  const respuesta = await api.put(`/solicitudes/roles/rechazar/${id}`);
   return respuesta.data;
 };
 export default api;

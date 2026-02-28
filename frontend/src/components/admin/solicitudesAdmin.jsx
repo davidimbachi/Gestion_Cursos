@@ -1,6 +1,12 @@
 import { useState, useEffect } from "react";
 
-const API = import.meta.env?.VITE_API_URL || "http://localhost:4000/api";
+// al usar los helpers centralizados evitamos duplicar lógica y mantener
+// las URLs sincronizadas con el backend.
+import {
+  listarSolicitudesRol,
+  aprobarSolicitudRol,
+  rechazarSolicitudRol
+} from "../../services/api";
 
 const SolicitudesAdmin = () => {
   const [solicitudes, setSolicitudes] = useState([]);
@@ -13,11 +19,7 @@ const SolicitudesAdmin = () => {
   const cargarSolicitudes = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem("token");
-      const res   = await fetch(`${API}/solicitudes`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
+      const data = await listarSolicitudesRol();
       setSolicitudes(Array.isArray(data) ? data : []);
     } catch {
       setMsg({ type: "error", text: "Error al cargar solicitudes." });
@@ -34,15 +36,16 @@ const SolicitudesAdmin = () => {
   const accion = async (id, tipo) => {
     setProcesando(id + tipo);
     try {
-      const token = localStorage.getItem("token");
-      const res   = await fetch(`${API}/solicitudes/${tipo}/${id}`, {
-        method: "PUT", headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
-      if (!res.ok) return setMsg({ type: "error", text: data.msg });
+      let data;
+      if (tipo === "aprobar") {
+        data = await aprobarSolicitudRol(id);
+      } else if (tipo === "rechazar") {
+        data = await rechazarSolicitudRol(id);
+      }
       setMsg({ type: "success", text: data.msg });
       cargarSolicitudes();
-    } catch {
+    } catch (err) {
+      console.error(err);
       setMsg({ type: "error", text: "Error al procesar." });
     } finally { setProcesando(null); }
   };

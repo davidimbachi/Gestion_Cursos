@@ -3,6 +3,8 @@ import { BrowserRouter as Router, Routes, Route,Navigate  } from 'react-router-d
 import MainLayout from './components/layouts/MainLayout';
 import OfertasList from './components/OfertasList';
 import CrearOferta from './components/ofertas/CrearOferta';
+import SolicitudesInstructor from './components/SolicitudesInstructor';
+import SolicitudesCoordinador from './components/SolicitudesCoordinador';
 
 // ── Auth ──────────────────────────────────────────
 import Login          from './components/autentificacion/Login';
@@ -13,6 +15,7 @@ import SolicitudesAdmin from './components/admin/solicitudesAdmin';
 import { useState, useEffect } from "react";
 import ResetPassword from "./components/autentificacion/ResetPassword";
 import ConfirmarEmail from "./components/autentificacion/ConfirmarEmail";
+
 
 
 
@@ -176,6 +179,16 @@ function App() {
             <CrearOferta />
           </MainLayout>
         }/>
+        
+        <Route path="/solicitudes" element={
+        <MainLayout 
+          user={usuarioData} 
+          grupoNombre={usuarioData.rol}
+          sidebarMenus={menuCompleto}
+        >
+          <SolicitudesInstructor />
+        </MainLayout>
+      }/>
       </Routes>
     </Router>
   );

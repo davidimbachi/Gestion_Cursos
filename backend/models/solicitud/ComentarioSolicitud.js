@@ -13,7 +13,7 @@ const comentarioSolicitudSchema = new Schema(
 
     usuario: {
       type: Schema.Types.ObjectId,
-      ref: "User",
+      ref: "Usuario",
       default: null,
     },
 

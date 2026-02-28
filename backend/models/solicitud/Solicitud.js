@@ -14,16 +14,15 @@ const solicitudSchema = new Schema(
 
     coordinador: {
       type: Schema.Types.ObjectId,
-      ref: "User",
+      ref: "Usuario",   // debía apuntar al modelo Usuario
       default: null,
     },
 
     solicitante: {
       type: Schema.Types.ObjectId,
-      ref: "User",
+      ref: "Usuario",
       required: true,
     },
-
     estado: {
       type: String,
       enum: ESTADOS,
@@ -32,7 +31,7 @@ const solicitudSchema = new Schema(
 
     funcionario: {
       type: Schema.Types.ObjectId,
-      ref: "User",
+      ref: "Usuario",
       default: null,
     },
 
@@ -48,7 +47,7 @@ const solicitudSchema = new Schema(
 
     usuarioUltimoCambio: {
       type: Schema.Types.ObjectId,
-      ref: "User",
+      ref: "Usuario",
       default: null,
     },
   },
