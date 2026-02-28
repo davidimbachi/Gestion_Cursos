@@ -48,8 +48,8 @@ const OfertasList = () => {
       setEnviando(true);
       const token = localStorage.getItem('token');
       
-      const response = await fetch(`http://localhost:4000/api/ofertas/${ofertaSeleccionada._id}/enviar`, {
-        method: 'POST',
+      const response = await fetch(`http://localhost:4000/api/ofertas/enviar/${ofertaSeleccionada._id}`, {  
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
@@ -58,13 +58,11 @@ const OfertasList = () => {
       
       const data = await response.json();
       
-      if (response.ok) {
-        // Actualizar la oferta en la lista
-        const ofertasActualizadas = ofertas.map(o => 
-          o._id === ofertaSeleccionada._id ? data.oferta : o
-        );
-        setOfertas(ofertasActualizadas);
-        setOfertaSeleccionada(data.oferta);
+        if (response.ok) {
+          // ✅ Remover la oferta enviada de la lista (porque ya no debe aparecer en "Mis ofertas")
+          const ofertasActualizadas = ofertas.filter(o => o._id !== ofertaSeleccionada._id);
+          setOfertas(ofertasActualizadas);
+          setOfertaSeleccionada(null);
         
         if (window.mostrarNotificacion) {
           window.mostrarNotificacion('success', '✅ Oferta enviada a revisión');

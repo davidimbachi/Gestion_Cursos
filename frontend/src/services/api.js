@@ -45,4 +45,27 @@ export const listarOfertas = async () => {
   return respuesta.data;
 };
 
+// 🔹 Enviar oferta a solicitud
+export const enviarOferta = async (id) => {
+  const respuesta = await api.put(`/ofertas/enviar/${id}`);
+  return respuesta.data;
+};
+
+// 🔹 Listar solicitudes del instructor (ofertas YA enviadas)
+export const listarSolicitudesInstructor = async () => {
+  const respuesta = await api.get('/solicitudes-ofertas/mis-solicitudes');
+  return respuesta.data;
+};
+
+// 🔹 Listar solicitudes para coordinador
+export const listarSolicitudesCoordinador = async () => {
+  const respuesta = await api.get('/solicitudes-ofertas/coordinador');
+  return respuesta.data;
+};
+
+// 🔹 Aprobar/rechazar solicitud
+export const actualizarEstadoSolicitud = async (id, estado) => {
+  const respuesta = await api.put(`/solicitudes-ofertas/${id}/estado`, { estado });
+  return respuesta.data;
+};
 export default api;

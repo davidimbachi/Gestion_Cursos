@@ -74,46 +74,45 @@ const listarOfertas = async (req, res) => {
 };
 
 
-// Enviar oferta a solicitud (para revisión del coordinador)
 const enviarOferta = async (req, res) => {
   try {
     const { id } = req.params;
     
-    // ✅ Buscar la oferta
     const oferta = await Oferta.findById(id);
+    if (!oferta) return res.status(404).json({ msg: "Oferta no encontrada" });
     
-    if (!oferta) {
-      return res.status(404).json({ msg: "Oferta no encontrada" });
-    }
-    
-    // ✅ Verificar que sea del usuario que la envía
     if (oferta.usuario.toString() !== req.usuario._id.toString()) {
       return res.status(403).json({ msg: "No tienes permiso para enviar esta oferta" });
     }
     
-    // ✅ Verificar que no haya sido enviada ya
     if (oferta.estado_enviada) {
       return res.status(400).json({ msg: "Esta oferta ya fue enviada" });
     }
     
-    // ✅ Actualizar estado a "enviada"
+    // ✅ Actualizar estado de la oferta
     oferta.estado_enviada = true;
     await oferta.save();
     
-    // ✅ Crear la solicitud para revisión del coordinador
+    // ✅ Crear solicitud CON LOS CAMPOS CORRECTOS del modelo
     const nuevaSolicitud = new Solicitud({
       oferta: oferta._id,
-      usuario: req.usuario._id,
-      coordinador: req.usuario.coordinadorAsignado,
-      estado: 'pendiente', // pendiente, aprobada, rechazada
-      codigo_ficha: oferta.codigo_ficha,
-      programa: oferta.programa,
-      fecha_inicio: oferta.fecha_inicio,
-      fecha_terminacion: oferta.fecha_terminacion,
-      cupo: oferta.cupo
+      solicitante: req.usuario._id,  // ✅ Campo correcto
+      coordinador: req.usuario.coordinadorAsignado || null,
+      estado: 'revision',
+      fechaUltimoCambio: Date.now(),
+      usuarioUltimoCambio: req.usuario._id
     });
     
     await nuevaSolicitud.save();
+    
+    // ✅ Poblar para devolver datos útiles al frontend
+    await nuevaSolicitud.populate({
+      path: 'oferta',
+      populate: [
+        { path: 'programa', select: 'nombre codigo' },
+        { path: 'solicitante', select: 'nombre email username' }
+      ]
+    });
     
     res.json({ 
       msg: "✅ Oferta enviada a revisión", 
@@ -123,10 +122,7 @@ const enviarOferta = async (req, res) => {
     
   } catch (error) {
     console.error('❌ ERROR en enviarOferta:', error.message);
-    res.status(500).json({ 
-      msg: "Error al enviar la oferta", 
-      error: error.message 
-    });
+    res.status(500).json({ msg: "Error al enviar la oferta", error: error.message });
   }
 };
 
