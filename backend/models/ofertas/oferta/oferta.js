@@ -16,6 +16,11 @@ const OfertaSchema = new mongoose.Schema(
       enum: ['ABIERTA', 'CERRADA'],
       default: 'ABIERTA'
     },
+    sector: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Sector',
+      required: false
+    },
     
     carta_empresa: { type: String },
     
@@ -26,8 +31,7 @@ const OfertaSchema = new mongoose.Schema(
     estado_enviada: { type: Boolean, default: false },
     cupo: { type: Number, default: 25 },
     
-    empresa_solicitante: { type: mongoose.Schema.Types.ObjectId, ref: "EmpresaSolicitante" },
-    programa_especial: { type: mongoose.Schema.Types.ObjectId, ref: "ProgramaEspecial" },
+    empresa_solicitante: { type: mongoose.Schema.Types.ObjectId, ref: "EmpresaOferta" },    programa_especial: { type: mongoose.Schema.Types.ObjectId, ref: "ProgramaEspecial" },
     
     codigo_ficha: { type: String },
     codigo_solicitud: { type: String },

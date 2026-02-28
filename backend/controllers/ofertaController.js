@@ -1,4 +1,5 @@
 import Oferta from "../models/ofertas/oferta/oferta.js";
+import EmpresaSolicitante from "../models/ofertas/oferta/EmpresaSolicitante.js"; // ← AGREGAR
 import { v4 as uuidv4 } from "uuid";
 
 
@@ -6,16 +7,56 @@ import { v4 as uuidv4 } from "uuid";
 const crearOferta = async (req, res) => {
   try {
     const datos = req.body;
-
-    // Generar un token único automáticamente
     datos.token_inscripcion = uuidv4();
 
+    // Si viene info de empresa REGULAR, crearla o actualizarla
+    if (datos.modalidad_oferta === 'REGULAR' && datos.info_empresa_regular) {
+      const infoEmp = datos.info_empresa_regular;
+
+      // Buscar si ya existe por NIT, si no crear nueva
+      let empresa = null;
+      if (infoEmp.nit_empresa) {
+        empresa = await EmpresaSolicitante.findOneAndUpdate(
+          { nit: infoEmp.nit_empresa },
+          {
+            nit:                        infoEmp.nit_empresa,
+            nombre:                     infoEmp.nombre_empresa,
+            cual_convenio:              infoEmp.cual_convenio,
+            fecha_creacion:             infoEmp.fecha_creacion,
+            tipo_empresa:               infoEmp.tipo_empresa,      // ObjectId del catálogo
+            direccion:                  infoEmp.direccion_empresa,
+            nombre_representante_legal: infoEmp.nombre_representante_legal,
+            nombre_contacto:            infoEmp.nombre_contacto,
+            celular_contacto:           infoEmp.celular_contacto,
+            correo_contacto:            infoEmp.correo_contacto,
+            numero_empleados:           infoEmp.numero_empleados,
+          },
+            { upsert: true, new: true }
+        );
+      } else {
+        empresa = await EmpresaSolicitante.create({
+          nombre:                    infoEmp.nombre_empresa,
+          hace_parte_convenio:       infoEmp.hace_parte_convenio,
+          cual_convenio:             infoEmp.cual_convenio,
+          fecha_creacion:            infoEmp.fecha_creacion,
+          tipo_empresa:              infoEmp.tipo_empresa,
+          direccion_empresa:         infoEmp.direccion_empresa,
+          nombre_representante_legal:infoEmp.nombre_representante_legal,
+          nombre_contacto:           infoEmp.nombre_contacto,
+          celular_contacto:          infoEmp.celular_contacto,
+          correo_contacto:           infoEmp.correo_contacto,
+          numero_empleados:          infoEmp.numero_empleados,
+        });
+      }
+
+      datos.empresa_solicitante = empresa._id;
+      delete datos.info_empresa_regular; // limpiar antes de guardar oferta
+    }
+
     const nuevaOferta = new Oferta(datos);
-    console.log("ANTES DE GUARDAR:", datos);
-
     await nuevaOferta.save();
-
     res.json(nuevaOferta);
+
   } catch (error) {
     console.error(error);
     res.status(500).json({ msg: "Error al crear la oferta", error });
@@ -44,6 +85,7 @@ const listarOfertas = async (req, res) => {
         ]
       })
       .populate("modalidad_programa", "nombre")
+      .populate("sector", "codigo nombre")          // ← NUEVO
       .populate({
         path: "lugar",
         select: "ambiente direccion",

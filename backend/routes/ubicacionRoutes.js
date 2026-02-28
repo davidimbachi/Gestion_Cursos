@@ -1,6 +1,7 @@
 import express from "express";
 import Departamento from "../models/ofertas/ubicacion/Departamento.js";
 import Municipio from "../models/ofertas/ubicacion/Municipio.js";
+import Corregimiento from "../models/ofertas/ubicacion/Corregimiento.js"; // 👈 importar
 import Lugar from "../models/ofertas/ubicacion/Lugar.js";
 
 const router = express.Router();
@@ -27,7 +28,17 @@ router.get("/municipios", async (req, res) => {
     res.status(500).json({ msg: "Error al listar municipios", error: error.message });
   }
 });
-
+// ── CORREGIMIENTOS ────────────────────────────────────────────────────────────
+// GET /api/ubicacion/corregimientos?municipio=ID
+router.get("/corregimientos", async (req, res) => {  // 👈 ruta nueva
+  try {
+    const filtro = req.query.municipio ? { municipio: req.query.municipio } : {};
+    const corregimientos = await Corregimiento.find(filtro).sort({ nombre: 1 });
+    res.json(corregimientos);
+  } catch (error) {
+    res.status(500).json({ msg: "Error al listar corregimientos", error: error.message });
+  }
+});
 // ── LUGARES ───────────────────────────────────────────────────────────────────
 // GET /api/ubicacion/lugares
 router.get("/lugares", async (req, res) => {

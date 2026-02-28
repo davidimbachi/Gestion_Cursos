@@ -1,5 +1,7 @@
 import express from 'express';
 import ProgramaFormacion from '../models/ofertas/academico/ProgramaFormacion.js';
+import Sector from '../models/ofertas/academico/Sector.js'; // ← NUEVO
+
 
 const router = express.Router();
 
@@ -30,5 +32,15 @@ router.get('/buscar', async (req, res) => {
     res.status(500).json({ mensaje: 'Error al buscar programas', error: error.message });
   }
 });
-
+// ── NUEVO ──────────────────────────────────────────────
+// GET /api/programas/sectores
+router.get('/sectores', async (req, res) => {
+  try {
+    const sectores = await Sector.find().sort({ codigo: 1 });
+    res.json(sectores);
+  } catch (error) {
+    res.status(500).json({ mensaje: 'Error al listar sectores', error: error.message });
+  }
+});
+//
 export default router;
