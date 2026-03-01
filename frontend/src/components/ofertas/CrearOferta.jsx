@@ -4,7 +4,6 @@ import './CrearOferta.css';
 
 const API = 'http://localhost:4000/api';
 
-const DURACIONES = [40, 60, 80, 120, 160, 200, 240, 300, 360, 400, 480, 600, 800, 880,   1200, 1600, 1760, 2640, 3520];
 const DIAS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 
 const CrearOferta = () => {
@@ -21,6 +20,9 @@ const CrearOferta = () => {
 
   const [modalidadOferta, setModalidadOferta] = useState('REGULAR');
   const [tipoOferta, setTipoOferta]           = useState('ABIERTA');
+  const [tiposOferta, setTiposOferta] = useState([]);
+  const [modalidades, setModalidades] = useState([]);
+  const [duracionesDisponibles, setDuracionesDisponibles] = useState([]);
   const [cupo, setCupo]                       = useState(25);
   const [fechaInicio, setFechaInicio]         = useState('');
   const [fechaTerminacion, setFechaTerminacion] = useState('');
@@ -52,30 +54,82 @@ const CrearOferta = () => {
   const [sectorSeleccionado, setSectorSeleccionado] = useState('');
 
   const [horarios, setHorarios] = useState([]);
-
   const [infoEmpresa, setInfoEmpresa] = useState({
-    cual_convenio: '',
-    nombre_empresa: '',
-    nit_empresa: '',
-    fecha_creacion: '',
-    tipo_empresa: '',
-    direccion_empresa: '',
-    nombre_representante_legal: '',
-    nombre_contacto: '',
-    celular_contacto: '',
-    correo_contacto: '',
-    numero_empleados: '',
-  });
+  cual_convenio: '',
+  nombre_empresa: '',
+  nit_empresa: '',
+  fecha_creacion: '',
+  tipo_empresa: '',
+  direccion_empresa: '',
+  nombre_representante_legal: '',
+  nombre_contacto: '',
+  celular_contacto: '',
+  correo_contacto: '',
+  numero_empleados: '',
+});
 
-  const updateEmpresa = (campo, valor) =>
-    setInfoEmpresa(prev => ({ ...prev, [campo]: valor }));
+const updateEmpresa = (campo, valor) =>
+  setInfoEmpresa(prev => ({ ...prev, [campo]: valor }));
 
-  const infoEmpresaVacia = {
-    cual_convenio: '', nombre_empresa: '', nit_empresa: '',
-    fecha_creacion: '', tipo_empresa: '', direccion_empresa: '',
-    nombre_representante_legal: '', nombre_contacto: '',
-    celular_contacto: '', correo_contacto: '', numero_empleados: '',
-  };
+const infoEmpresaVacia = {
+  cual_convenio: '', nombre_empresa: '', nit_empresa: '',
+  fecha_creacion: '', tipo_empresa: '', direccion_empresa: '',
+  nombre_representante_legal: '', nombre_contacto: '',
+  celular_contacto: '', correo_contacto: '', numero_empleados: '',
+};
+
+  const [infoCampesena, setInfoCampesena] = useState({
+  // Datos empresa
+  nombre_empresa: '',
+  nit_empresa: '',
+  fecha_creacion: '',
+  tipo_empresa: '',
+  direccion_empresa: '',
+  nombre_representante_legal: '',
+  nombre_contacto: '',
+  celular_contacto: '',
+  correo_contacto: '',
+  numero_empleados: '',
+  // Instructor Técnico
+  inst_tecnico_nombre: '',
+  inst_tecnico_correo: '',
+  inst_tecnico_celular: '',
+  inst_tecnico_mes1: '',
+  inst_tecnico_mes2: '',
+  inst_tecnico_mes3: '',
+  inst_tecnico_mes4: '',
+  inst_tecnico_mes5: '',
+  // Instructor Empresarial
+  inst_empresarial_nombre: '',
+  inst_empresarial_correo: '',
+  inst_empresarial_celular: '',
+  inst_empresarial_mes1: '',
+  inst_empresarial_mes2: '',
+  inst_empresarial_mes3: '',
+  inst_empresarial_mes4: '',
+  inst_empresarial_mes5: '',
+  // Instructor Full Popular
+  inst_fullpopular_nombre: '',
+  inst_fullpopular_correo: '',
+  inst_fullpopular_celular: '',
+  inst_fullpopular_mes1: '',
+  inst_fullpopular_mes2: '',
+});
+
+const updateCampesena = (campo, valor) =>
+  setInfoCampesena(prev => ({ ...prev, [campo]: valor }));
+
+const infoCampesenaVacia = {
+  nombre_empresa: '', nit_empresa: '', fecha_creacion: '',
+  tipo_empresa: '', direccion_empresa: '', nombre_representante_legal: '',
+  nombre_contacto: '', celular_contacto: '', correo_contacto: '', numero_empleados: '',
+  inst_tecnico_nombre: '', inst_tecnico_correo: '', inst_tecnico_celular: '',
+  inst_tecnico_mes1: '', inst_tecnico_mes2: '', inst_tecnico_mes3: '', inst_tecnico_mes4: '', inst_tecnico_mes5: '',
+  inst_empresarial_nombre: '', inst_empresarial_correo: '', inst_empresarial_celular: '',
+  inst_empresarial_mes1: '', inst_empresarial_mes2: '', inst_empresarial_mes3: '', inst_empresarial_mes4: '', inst_empresarial_mes5: '',
+  inst_fullpopular_nombre: '', inst_fullpopular_correo: '', inst_fullpopular_celular: '',
+  inst_fullpopular_mes1: '', inst_fullpopular_mes2: '',
+};
 
   // ✅ tabsConfig dinámico — paso Empresa solo si tipoOferta === 'CERRADA'
   const tabsConfig = [
@@ -99,21 +153,21 @@ const CrearOferta = () => {
   useEffect(() => {
     axios.get(`${API}/catalogos/programas-especiales`).then(r => setProgramasEspeciales(r.data)).catch(console.error);
   }, []);
+  
+// Buscar empresas existentes filtradas por tipo
+useEffect(() => {
+  const url = `${API}/empresas?tipo=${modalidadOferta}${busquedaEmpresa ? `&q=${busquedaEmpresa}` : ''}`;
+  axios.get(url).then(r => setEmpresasExistentes(r.data)).catch(console.error);
+}, [busquedaEmpresa, modalidadOferta]);
 
-  // Buscar empresas ya registradas en empresas_oferta
-  useEffect(() => {
-    axios.get(`${API}/empresas_oferta${busquedaEmpresa ? `?q=${busquedaEmpresa}` : ''}`)
-      .then(r => setEmpresasExistentes(r.data))
-      .catch(console.error);
-  }, [busquedaEmpresa]);
-
-  // Catálogo tipos de empresa desde /empresas (LIMITADA, COOPERATIVA, etc.)
-  useEffect(() => {
-    axios.get(`${API}/empresas`)
+  // Catálogo tipos de empresa filtrado por modalidad
+ useEffect(() => {
+    axios.get(`${API}/catalogos/tipos-empresa?modalidad=${modalidadOferta}`)
       .then(r => setTiposEmpresa(r.data))
       .catch(console.error);
-  }, []);
+  }, [modalidadOferta]); // ← se actualiza al cambiar modalidad
 
+  // Ubicaciones
   useEffect(() => {
     axios.get(`${API}/ubicacion/departamentos`).then(r => setDepartamentos(r.data)).catch(console.error);
   }, []);
@@ -135,6 +189,24 @@ const CrearOferta = () => {
   useEffect(() => {
     axios.get(`${API}/programas/sectores`).then(r => setSectores(r.data)).catch(console.error);
   }, []);
+
+  useEffect(() => {
+  axios.get(`${API}/catalogos/modalidades-oferta`)
+    .then(r => setModalidades(r.data))
+    .catch(console.error);
+}, []);
+
+  useEffect(() => {
+    axios.get(`${API}/programas/duraciones`)
+      .then(r => setDuracionesDisponibles(r.data))
+      .catch(console.error);
+  }, []);
+
+  useEffect(() => {
+  axios.get(`${API}/catalogos/tipos-oferta`)
+    .then(r => setTiposOferta(r.data))
+    .catch(console.error);
+}, []);
 
   const tabIndex = tabsConfig.findIndex(t => t.key === tabActiva);
   const irTab = (dir) => {
@@ -170,11 +242,14 @@ const CrearOferta = () => {
       return;
     }
 
-    setEnviando(true);
+   setEnviando(true);
     try {
+      const token = localStorage.getItem('token');
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+
       const lugarRes = await axios.post(`${API}/ubicacion/lugares`, {
         departamento, municipio, corregimiento, ambiente, direccion
-      });
+      }, config);
 
       await axios.post(`${API}/ofertas`, {
         programa: programaSeleccionado,
@@ -190,11 +265,16 @@ const CrearOferta = () => {
         empresa_solicitante: empresaSeleccionada || undefined,
         programa_especial: programaEspecial || undefined,
         lugar: lugarRes.data._id,
-        // Solo guarda info_empresa si: cerrada + regular + no seleccionó empresa existente
+        // REGULAR
         info_empresa_regular: (tipoOferta === 'CERRADA' && modalidadOferta === 'REGULAR' && !empresaSeleccionada)
           ? infoEmpresa
           : undefined,
-      });
+            // CAMPESENA — se agrega aquí al lado
+        info_empresa_campesena: (tipoOferta === 'CERRADA' && modalidadOferta === 'CAMPESENA' && !empresaSeleccionada)
+            ? infoCampesena
+            : undefined,
+      }, config);  // ← agregar config aquí
+    
 
       setExito(true);
     } catch (err) {
@@ -215,7 +295,9 @@ const CrearOferta = () => {
     setDepartamento(''); setMunicipio(''); setAmbiente(''); setDireccion('');
     setHorarios([]); setErrores({});
     setSectorSeleccionado('');
-    setInfoEmpresa(infoEmpresaVacia);
+    setInfoEmpresa(infoEmpresaVacia);{}
+    setInfoCampesena(infoCampesenaVacia);
+
   };
 
   if (exito) return (
@@ -276,7 +358,9 @@ const CrearOferta = () => {
                     <select className="form__select" value={duracion}
                       onChange={e => { setDuracion(e.target.value); setProgramaSeleccionado(''); setBusquedaPrograma(''); setProgramas([]); }}>
                       <option value="">Selecciona duración</option>
-                      {DURACIONES.map(d => <option key={d} value={d}>{d} horas</option>)}
+                      {duracionesDisponibles.map(d => (
+                        <option key={d} value={d}>{d} horas</option>
+                      ))}
                     </select>
                   </div>
 
@@ -357,8 +441,9 @@ const CrearOferta = () => {
                     <label className="required">Modalidad de oferta</label>
                     <select className="form__select" value={modalidadOferta}
                       onChange={e => setModalidadOferta(e.target.value)}>
-                      <option value="REGULAR">Regular</option>
-                      <option value="CAMPESENA">Campesena</option>
+                        {modalidades.map(m => (
+                        <option key={m._id} value={m.nombre}>{m.nombre}</option>
+                      ))}
                     </select>
                   </div>
 
@@ -376,8 +461,9 @@ const CrearOferta = () => {
                           if (tabActiva === 'empresa') setTabActiva('oferta');
                         }
                       }}>
-                      <option value="ABIERTA">Abierta</option>
-                      <option value="CERRADA">Cerrada</option>
+                      {tiposOferta.map(t => (
+                        <option key={t._id} value={t.nombre}>{t.nombre}</option>
+                      ))}
                     </select>
                   </div>
 
@@ -415,6 +501,126 @@ const CrearOferta = () => {
                       {programasEspeciales.map(p => <option key={p._id} value={p._id}>{p.nombre}</option>)}
                     </select>
                   </div>
+                    
+                {/* ── INSTRUCTOR TÉCNICO ── */}
+                <div className="form-group form-group--full">
+                  <hr style={{ border: 'none', borderTop: '2px solid #e8f0fe', margin: '8px 0 16px 0' }} />
+                  <div style={{ background: 'linear-gradient(135deg, #1a3a5c 0%, #2d6a9f 100%)', borderRadius: '10px', padding: '12px 20px', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <i className="fas fa-chalkboard-teacher" style={{ color: '#f0c040', fontSize: '18px' }}></i>
+                    <span style={{ color: '#fff', fontWeight: 600, fontSize: '15px' }}>Instructor Técnico</span>
+                  </div>
+                </div>
+
+                <div className="form-group form-group--full">
+                  <label>Nombre completo</label>
+                  <div style={{ position: 'relative' }}>
+                    <i className="fas fa-user" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#2d6a9f' }}></i>
+                    <input type="text" className="form__input" value={infoCampesena.inst_tecnico_nombre} onChange={e => updateCampesena('inst_tecnico_nombre', e.target.value)} style={{ paddingLeft: '38px' }} />
+                  </div>
+                </div>
+                <div className="form-group">
+                  <label>Correo electrónico</label>
+                  <div style={{ position: 'relative' }}>
+                    <i className="fas fa-envelope" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#2d6a9f' }}></i>
+                    <input type="email" className="form__input" value={infoCampesena.inst_tecnico_correo} onChange={e => updateCampesena('inst_tecnico_correo', e.target.value)} style={{ paddingLeft: '38px' }} />
+                  </div>
+                </div>
+                <div className="form-group">
+                  <label>Celular</label>
+                  <div style={{ position: 'relative' }}>
+                    <i className="fas fa-mobile-alt" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#2d6a9f' }}></i>
+                    <input type="tel" className="form__input" value={infoCampesena.inst_tecnico_celular} onChange={e => updateCampesena('inst_tecnico_celular', e.target.value)} style={{ paddingLeft: '38px' }} />
+                  </div>
+                </div>
+
+                {/* Fechas Técnico */}
+                {['mes1','mes2','mes3','mes4','mes5'].map((mes, i) => (
+                  <div className="form-group" key={mes}>
+                    <label>Fechas ejecución Mes {i + 1}</label>
+                    <input type="text" className="form__input" placeholder="Ej: 01/03/2026 - 15/03/2026"
+                      value={infoCampesena[`inst_tecnico_${mes}`]}
+                      onChange={e => updateCampesena(`inst_tecnico_${mes}`, e.target.value)} />
+                  </div>
+                ))}
+
+                {/* ── INSTRUCTOR EMPRESARIAL ── */}
+                <div className="form-group form-group--full">
+                  <hr style={{ border: 'none', borderTop: '2px solid #e8f0fe', margin: '8px 0 16px 0' }} />
+                  <div style={{ background: 'linear-gradient(135deg, #1a3a5c 0%, #2d6a9f 100%)', borderRadius: '10px', padding: '12px 20px', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <i className="fas fa-briefcase" style={{ color: '#f0c040', fontSize: '18px' }}></i>
+                    <span style={{ color: '#fff', fontWeight: 600, fontSize: '15px' }}>Instructor Empresarial</span>
+                  </div>
+                </div>
+
+                <div className="form-group form-group--full">
+                  <label>Nombre completo</label>
+                  <div style={{ position: 'relative' }}>
+                    <i className="fas fa-user" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#2d6a9f' }}></i>
+                    <input type="text" className="form__input" value={infoCampesena.inst_empresarial_nombre} onChange={e => updateCampesena('inst_empresarial_nombre', e.target.value)} style={{ paddingLeft: '38px' }} />
+                  </div>
+                </div>
+                <div className="form-group">
+                  <label>Correo electrónico</label>
+                  <div style={{ position: 'relative' }}>
+                    <i className="fas fa-envelope" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#2d6a9f' }}></i>
+                    <input type="email" className="form__input" value={infoCampesena.inst_empresarial_correo} onChange={e => updateCampesena('inst_empresarial_correo', e.target.value)} style={{ paddingLeft: '38px' }} />
+                  </div>
+                </div>
+                <div className="form-group">
+                  <label>Celular</label>
+                  <div style={{ position: 'relative' }}>
+                    <i className="fas fa-mobile-alt" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#2d6a9f' }}></i>
+                    <input type="tel" className="form__input" value={infoCampesena.inst_empresarial_celular} onChange={e => updateCampesena('inst_empresarial_celular', e.target.value)} style={{ paddingLeft: '38px' }} />
+                  </div>
+                </div>
+
+                {['mes1','mes2','mes3','mes4','mes5'].map((mes, i) => (
+                  <div className="form-group" key={mes}>
+                    <label>Fechas ejecución Mes {i + 1}</label>
+                    <input type="text" className="form__input" placeholder="Ej: 01/03/2026 - 15/03/2026"
+                      value={infoCampesena[`inst_empresarial_${mes}`]}
+                      onChange={e => updateCampesena(`inst_empresarial_${mes}`, e.target.value)} />
+                  </div>
+                ))}
+
+                {/* ── INSTRUCTOR FULL POPULAR ── */}
+                <div className="form-group form-group--full">
+                  <hr style={{ border: 'none', borderTop: '2px solid #e8f0fe', margin: '8px 0 16px 0' }} />
+                  <div style={{ background: 'linear-gradient(135deg, #1a3a5c 0%, #2d6a9f 100%)', borderRadius: '10px', padding: '12px 20px', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <i className="fas fa-star" style={{ color: '#f0c040', fontSize: '18px' }}></i>
+                    <span style={{ color: '#fff', fontWeight: 600, fontSize: '15px' }}>Instructor Full Popular</span>
+                  </div>
+                </div>
+
+                <div className="form-group form-group--full">
+                  <label>Nombre completo</label>
+                  <div style={{ position: 'relative' }}>
+                    <i className="fas fa-user" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#2d6a9f' }}></i>
+                    <input type="text" className="form__input" value={infoCampesena.inst_fullpopular_nombre} onChange={e => updateCampesena('inst_fullpopular_nombre', e.target.value)} style={{ paddingLeft: '38px' }} />
+                  </div>
+                </div>
+                <div className="form-group">
+                  <label>Correo electrónico</label>
+                  <div style={{ position: 'relative' }}>
+                    <i className="fas fa-envelope" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#2d6a9f' }}></i>
+                    <input type="email" className="form__input" value={infoCampesena.inst_fullpopular_correo} onChange={e => updateCampesena('inst_fullpopular_correo', e.target.value)} style={{ paddingLeft: '38px' }} />
+                  </div>
+                </div>
+                <div className="form-group">
+                  <label>Celular</label>
+                  <div style={{ position: 'relative' }}>
+                    <i className="fas fa-mobile-alt" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#2d6a9f' }}></i>
+                    <input type="tel" className="form__input" value={infoCampesena.inst_fullpopular_celular} onChange={e => updateCampesena('inst_fullpopular_celular', e.target.value)} style={{ paddingLeft: '38px' }} />
+                  </div>
+                </div>
+                  {['mes1','mes2'].map((mes, i) => (
+                    <div className="form-group" key={mes}>
+                      <label>Fechas ejecución Mes {i + 1}</label>
+                      <input type="text" className="form__input" placeholder="Ej: 01/03/2026 - 15/03/2026"
+                        value={infoCampesena[`inst_fullpopular_${mes}`]}
+                        onChange={e => updateCampesena(`inst_fullpopular_${mes}`, e.target.value)} />
+                    </div>
+                  ))}
 
                 </div>
               </div>
@@ -428,29 +634,15 @@ const CrearOferta = () => {
                 </h2>
                 <div className="form-section__grid">
 
-                  {/* Buscar empresa ya registrada en empresas_oferta */}
+                    {/*Listar Tipo de empresa  */}
                   <div className="form-group form-group--full">
-                    <label>Buscar empresa ya registrada</label>
-                    <input type="text" className="form__input"
-                      placeholder="Escribe el nombre..."
-                      value={busquedaEmpresa}
-                      onChange={e => setBusquedaEmpresa(e.target.value)} />
-                  </div>
-
-                  <div className="form-group form-group--full">
-                    <label>
-                      Seleccionar empresa existente
-                      <span className="field-hint" style={{ marginLeft: 8 }}>
-                        (Si no seleccionas ninguna, llena el formulario abajo)
-                      </span>
-                    </label>
-                    <select className="form__select" value={empresaSeleccionada}
-                      onChange={e => setEmpresaSeleccionada(e.target.value)}>
-                      <option value="">— Nueva empresa —</option>
-                      {empresasExistentes.map(e => (
-                        <option key={e._id} value={e._id}>
-                          {e.nombre} {e.nit ? `— NIT: ${e.nit}` : ''}
-                        </option>
+                      <label>Tipo de  empresa <span className="field-hint"></span></label>
+                      <select className="form__select" value={infoEmpresa.tipo_empresa}
+                      onChange={e => updateEmpresa('tipo_empresa', e.target.value)}
+                      style={{ paddingLeft: '38px' }}>
+                      <option value="">Selecciona...</option>
+                      {tiposEmpresa.map(t => (
+                        <option key={t._id} value={t._id}>{t.nombre}</option>
                       ))}
                     </select>
                   </div>
@@ -538,24 +730,7 @@ const CrearOferta = () => {
                         </div>
                       </div>
 
-                      {/* TIPO EMPRESA — catálogo desde BD */}
-                      <div className="form-group">
-                        <label>Tipo de empresa</label>
-                        <div style={{ position: 'relative' }}>
-                          <i className="fas fa-tags" style={{
-                            position: 'absolute', left: '12px', top: '50%',
-                            transform: 'translateY(-50%)', color: '#2d6a9f', zIndex: 1
-                          }}></i>
-                          <select className="form__select" value={infoEmpresa.tipo_empresa}
-                            onChange={e => updateEmpresa('tipo_empresa', e.target.value)}
-                            style={{ paddingLeft: '38px' }}>
-                            <option value="">Selecciona tipo de empresa...</option>
-                            {tiposEmpresa.map(t => (
-                              <option key={t._id} value={t._id}>{t.nombre}</option>
-                            ))}
-                          </select>
-                        </div>
-                      </div>
+                    
 
                       {/* DIRECCIÓN */}
                       <div className="form-group form-group--full">
@@ -649,9 +824,105 @@ const CrearOferta = () => {
                     </>
                   )}
 
+                  {/* campesena formulario */}
+                  {/* Formulario CAMPESENA: solo si CAMPESENA y no seleccionó empresa existente */}
+              { modalidadOferta === 'CAMPESENA' && !empresaSeleccionada && (
+             <>
+                {/* Header */}
+                <div className="form-group form-group--full">
+                  <hr style={{ border: 'none', borderTop: '2px solid #e8f0fe', margin: '8px 0 16px 0' }} />
+                  <div style={{ background: 'linear-gradient(135deg, #1a3a5c 0%, #2d6a9f 100%)', borderRadius: '10px', padding: '12px 20px', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <i className="fas fa-tractor" style={{ color: '#f0c040', fontSize: '18px' }}></i>
+                    <span style={{ color: '#fff', fontWeight: 600, fontSize: '15px' }}>Información de la Empresa</span>
+                  </div>
                 </div>
-              </div>
-            )}
+
+                {/* NOMBRE */}
+                <div className="form-group">
+                  <label>Nombre de la empresa</label>
+                  <div style={{ position: 'relative' }}>
+                    <i className="fas fa-building" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#2d6a9f' }}></i>
+                    <input type="text" className="form__input" value={infoCampesena.nombre_empresa} onChange={e => updateCampesena('nombre_empresa', e.target.value)} style={{ paddingLeft: '38px' }} />
+                  </div>
+                </div>
+
+                {/* NIT */}
+                <div className="form-group">
+                  <label>NIT de la empresa</label>
+                  <div style={{ position: 'relative' }}>
+                    <i className="fas fa-id-card" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#2d6a9f' }}></i>
+                    <input type="text" className="form__input" placeholder="Ej: 900123456-1" value={infoCampesena.nit_empresa} onChange={e => updateCampesena('nit_empresa', e.target.value)} style={{ paddingLeft: '38px' }} />
+                  </div>
+                </div>
+
+                {/* FECHA CREACIÓN */}
+                <div className="form-group">
+                  <label>Fecha de creación</label>
+                  <div style={{ position: 'relative' }}>
+                    <i className="fas fa-calendar-alt" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#2d6a9f' }}></i>
+                    <input type="date" className="form__input" value={infoCampesena.fecha_creacion} onChange={e => updateCampesena('fecha_creacion', e.target.value)} style={{ paddingLeft: '38px' }} />
+                  </div>
+                </div>
+
+                {/* DIRECCIÓN */}
+                <div className="form-group form-group--full">
+                  <label>Dirección de la empresa</label>
+                  <div style={{ position: 'relative' }}>
+                    <i className="fas fa-map-marker-alt" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#2d6a9f' }}></i>
+                    <input type="text" className="form__input" placeholder="Calle, carrera, barrio..." value={infoCampesena.direccion_empresa} onChange={e => updateCampesena('direccion_empresa', e.target.value)} style={{ paddingLeft: '38px' }} />
+                  </div>
+                </div>
+
+                {/* REPRESENTANTE LEGAL */}
+                <div className="form-group form-group--full">
+                  <label>Nombre del representante legal</label>
+                  <div style={{ position: 'relative' }}>
+                    <i className="fas fa-user-tie" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#2d6a9f' }}></i>
+                    <input type="text" className="form__input" value={infoCampesena.nombre_representante_legal} onChange={e => updateCampesena('nombre_representante_legal', e.target.value)} style={{ paddingLeft: '38px' }} />
+                  </div>
+                </div>
+
+                {/* CONTACTO */}
+                <div className="form-group form-group--full">
+                  <label>Nombre completo del contacto</label>
+                  <div style={{ position: 'relative' }}>
+                    <i className="fas fa-user" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#2d6a9f' }}></i>
+                    <input type="text" className="form__input" value={infoCampesena.nombre_contacto} onChange={e => updateCampesena('nombre_contacto', e.target.value)} style={{ paddingLeft: '38px' }} />
+                  </div>
+                </div>
+
+                {/* CELULAR */}
+                <div className="form-group">
+                  <label>No. de celular del contacto</label>
+                  <div style={{ position: 'relative' }}>
+                    <i className="fas fa-mobile-alt" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#2d6a9f' }}></i>
+                    <input type="tel" className="form__input" placeholder="Ej: 3001234567" value={infoCampesena.celular_contacto} onChange={e => updateCampesena('celular_contacto', e.target.value)} style={{ paddingLeft: '38px' }} />
+                  </div>
+                </div>
+
+                {/* CORREO */}
+                <div className="form-group">
+                  <label>Correo electrónico del contacto</label>
+                  <div style={{ position: 'relative' }}>
+                    <i className="fas fa-envelope" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#2d6a9f' }}></i>
+                    <input type="email" className="form__input" placeholder="contacto@empresa.com" value={infoCampesena.correo_contacto} onChange={e => updateCampesena('correo_contacto', e.target.value)} style={{ paddingLeft: '38px' }} />
+                  </div>
+                </div>
+
+                {/* EMPLEADOS */}
+                <div className="form-group">
+                  <label>Número de empleados</label>
+                  <div style={{ position: 'relative' }}>
+                    <i className="fas fa-users" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#2d6a9f' }}></i>
+                    <input type="number" className="form__input" min={1} value={infoCampesena.numero_empleados} onChange={e => updateCampesena('numero_empleados', e.target.value)} style={{ paddingLeft: '38px' }} />
+                  </div>
+                </div>
+
+            </>
+                 )}
+                </div>
+            </div>
+          )}
 
             {/* ══ UBICACIÓN ══ */}
             {tabActiva === 'ubicacion' && (

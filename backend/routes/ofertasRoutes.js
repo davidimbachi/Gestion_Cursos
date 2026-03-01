@@ -7,8 +7,9 @@ import checkAuth from "../middleware/checkAuth.js";
 const router = express.Router();
 
 
-router.post("/", checkInstructor, crearOferta);
-router.get("/",  checkAuth,listarOfertas);
-router.put("/:id", checkInstructor, actualizarOferta);
+// ✅ Así debe quedar — checkAuth siempre primero
+router.post("/", checkAuth, checkInstructor, crearOferta);
+router.get("/",  checkAuth, listarOfertas);
+router.put("/:id", checkAuth, checkInstructor, actualizarOferta);
 
 export default router;

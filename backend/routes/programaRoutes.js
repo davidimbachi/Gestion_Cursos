@@ -5,17 +5,14 @@ import Sector from '../models/ofertas/academico/Sector.js'; // ← NUEVO
 
 const router = express.Router();
 
-// GET /api/programas?duracion=40
-// GET /api/programas        (sin filtro, devuelve todos)
-router.get('/', async (req, res) => {
+
+// Duraciones únicas desde programa_formacion
+router.get('/duraciones', async (req, res) => {
   try {
-    const { duracion } = req.query;
-    const query = {};
-    if (duracion) query.duracion = parseInt(duracion);
-    const programas = await ProgramaFormacion.find(query).sort({ nombre: 1 });
-    res.json(programas);
-  } catch (error) {
-    res.status(500).json({ mensaje: 'Error al listar programas', error: error.message });
+    const duraciones = await ProgramaFormacion.distinct('duracion');
+    res.json(duraciones.sort((a, b) => a - b));
+  } catch (err) {
+    res.status(500).json({ msg: 'Error al obtener duraciones' });
   }
 });
 

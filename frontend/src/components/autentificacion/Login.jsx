@@ -27,8 +27,8 @@ const Login = () => {
 
       if (!res.ok) return setMsg({ type: "error", text: data.msg });
 
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("usuario", JSON.stringify({
+        localStorage.setItem("token", data.token);      
+        localStorage.setItem("usuario", JSON.stringify({
         _id: data._id,
         username: data.username,
         email: data.email,
