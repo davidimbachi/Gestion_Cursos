@@ -28,7 +28,7 @@ app.use(express.json());
 // Middleware para simular usuario con rol
 // Routing
 app.use("/api/usuarios", usuariosRoutes);
-app.use("/api/solicitudes", solicitudesRoutes);
+app.use('/api/solicitudes-ofertas', solicitudesRoutes);
 app.use("/uploads", express.static("uploads")); // Servir archivos estáticos
 
 app.use(async (req, res, next) => {

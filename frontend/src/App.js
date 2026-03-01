@@ -189,6 +189,16 @@ function App() {
           <SolicitudesInstructor />
         </MainLayout>
       }/>
+
+      <Route path="/coordinador/solicitudes" element={
+      <MainLayout 
+        user={usuarioData} 
+        grupoNombre={usuarioData.rol}
+        sidebarMenus={menuCompleto}
+      >
+        <SolicitudesCoordinador />
+      </MainLayout>
+    }/>
       </Routes>
     </Router>
   );

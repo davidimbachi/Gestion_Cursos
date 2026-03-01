@@ -52,7 +52,7 @@ const SolicitudesCoordinador = () => {
 
   const rechazarSolicitud = async (id) => {
     const motivo = prompt('Motivo del rechazo (opcional):');
-    if (motivo === null) return; // Usuario canceló
+    if (motivo === null) return;
     
     try {
       await api.put(`/solicitudes-ofertas/${id}/rechazar`, { motivo: motivo || 'Sin motivo especificado' });
@@ -74,12 +74,21 @@ const SolicitudesCoordinador = () => {
 
   const getBadgeEstado = (estado) => {
     const estilos = {
-      revision: { bg: 'bg-yellow-100', text: 'text-yellow-800', label: '🔄 En revisión' },
-      pendiente: { bg: 'bg-blue-100', text: 'text-blue-800', label: '⏳ Pendiente' },
-      aprobada: { bg: 'bg-green-100', text: 'text-green-800', label: '✅ Aprobada' },
-      rechazada: { bg: 'bg-red-100', text: 'text-red-800', label: '❌ Rechazada' }
+      revision: { bg: 'bg-yellow-100', text: 'text-yellow-800', label: 'Revisión Coordinador' },
+      pendiente: { bg: 'bg-blue-100', text: 'text-blue-800', label: 'Pendiente' },
+      aprobada: { bg: 'bg-green-100', text: 'text-green-800', label: 'Aprobada' },
+      rechazada: { bg: 'bg-red-100', text: 'text-red-800', label: 'Rechazada' }
     };
     return estilos[estado] || { bg: 'bg-gray-100', text: 'text-gray-800', label: estado };
+  };
+
+  const formatearFecha = (fecha) => {
+    if (!fecha) return 'N/A';
+    return new Date(fecha).toLocaleDateString('es-CO', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
   };
 
   if (cargando) {
@@ -164,7 +173,7 @@ const SolicitudesCoordinador = () => {
         </select>
       </div>
 
-      {/* Lista de solicitudes */}
+      {/* Tabla */}
       {solicitudes.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '60px 20px', color: '#6b7280' }}>
           <i className="fas fa-inbox" style={{ fontSize: '64px', marginBottom: '20px', opacity: 0.3 }}></i>
@@ -177,7 +186,6 @@ const SolicitudesCoordinador = () => {
           boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
           overflow: 'hidden'
         }}>
-          {/* Tabla */}
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead style={{ background: '#f3f4f6' }}>
@@ -193,7 +201,7 @@ const SolicitudesCoordinador = () => {
                 {solicitudes.map((sol) => {
                   const badge = getBadgeEstado(sol.estado);
                   return (
-                    <tr key={sol._id} style={{ borderBottom: '1px solid #e5e7eb', transition: 'all 0.3s ease' }}
+                    <tr key={sol._id} style={{ borderBottom: '1px solid #e5e7eb' }}
                       onMouseEnter={(e) => e.currentTarget.style.background = '#f9fafb'}
                       onMouseLeave={(e) => e.currentTarget.style.background = 'white'}
                     >
@@ -224,8 +232,8 @@ const SolicitudesCoordinador = () => {
                           {badge.label}
                         </span>
                       </td>
-                      <td style={{ padding: '15px', fontSize: '13px', color: '#6b7280' }}>
-                        {new Date(sol.createdAt).toLocaleDateString('es-CO')}
+                      <td style={{ padding: '15px', fontSize: '14px', color: '#6b7280' }}>
+                        {formatearFecha(sol.createdAt)}
                       </td>
                       <td style={{ padding: '15px', textAlign: 'center' }}>
                         {sol.estado === 'revision' || sol.estado === 'pendiente' ? (
@@ -245,7 +253,6 @@ const SolicitudesCoordinador = () => {
                                 alignItems: 'center',
                                 gap: '5px'
                               }}
-                              title="Aprobar"
                             >
                               <i className="fas fa-check"></i> Aprobar
                             </button>
@@ -264,7 +271,6 @@ const SolicitudesCoordinador = () => {
                                 alignItems: 'center',
                                 gap: '5px'
                               }}
-                              title="Rechazar"
                             >
                               <i className="fas fa-times"></i> Rechazar
                             </button>
