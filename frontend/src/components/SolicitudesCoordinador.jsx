@@ -1,4 +1,6 @@
+/* eslint-disable no-restricted-globals */
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 
 const SolicitudesCoordinador = () => {
@@ -6,10 +8,22 @@ const SolicitudesCoordinador = () => {
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
   const [filtroEstado, setFiltroEstado] = useState('todos');
+  const [solicitudSeleccionada, setSolicitudSeleccionada] = useState(null);
+  const [mostrarDetalles, setMostrarDetalles] = useState(false);
+  const [mostrarObservaciones, setMostrarObservaciones] = useState(false);
+  const [observacionesTexto, setObservacionesTexto] = useState('');
+  const navigate = useNavigate();
 
   useEffect(() => {
+    const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+    if (usuario.rol?.toLowerCase() !== 'coordinador') {
+      console.warn('Acceso no permito a coordinador. rol actual:', usuario.rol);
+      navigate('/inicio');
+      return;
+    }
     cargarSolicitudes();
-  }, [filtroEstado]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filtroEstado, navigate]);
 
   const cargarSolicitudes = async () => {
     try {
@@ -21,16 +35,27 @@ const SolicitudesCoordinador = () => {
       const respuesta = await api.get(url);
       setSolicitudes(respuesta.data);
       console.log('✅ Solicitudes cargadas:', respuesta.data.length);
+      setError(null);
     } catch (err) {
-      console.error('❌ Error:', err);
-      setError('No se pudieron cargar las solicitudes');
+      console.error('❌ Error completo:', err);
+      console.error('❌ Status:', err.response?.status);
+      console.error('❌ Data:', err.response?.data);
+      
+      const mensajeError = err.response?.data?.msg || err.message || 'No se pudieron cargar las solicitudes';
+      setError(`Error: ${mensajeError}`);
+      
+      // Si es error 403, mostrar más detalles
+      if (err.response?.status === 403) {
+        console.error('❌ Acceso denegado. Rol actual:', err.response?.data?.rolActual);
+        setError(`Acceso denegado: ${err.response?.data?.msg}. Tu rol es: ${err.response?.data?.rolActual}`);
+      }
     } finally {
       setCargando(false);
     }
   };
 
   const aprobarSolicitud = async (id) => {
-    if (!confirm('¿Estás seguro de APROBAR esta solicitud?')) return;
+    if (!window.confirm('¿Estás seguro de APROBAR esta solicitud?')) return;
     
     try {
       await api.put(`/solicitudes-ofertas/${id}/aprobar`);
@@ -51,7 +76,7 @@ const SolicitudesCoordinador = () => {
   };
 
   const rechazarSolicitud = async (id) => {
-    const motivo = prompt('Motivo del rechazo (opcional):');
+    const motivo = window.prompt('Motivo del rechazo (opcional):');
     if (motivo === null) return;
     
     try {
@@ -72,14 +97,41 @@ const SolicitudesCoordinador = () => {
     }
   };
 
-  const getBadgeEstado = (estado) => {
-    const estilos = {
-      revision: { bg: 'bg-yellow-100', text: 'text-yellow-800', label: 'Revisión Coordinador' },
-      pendiente: { bg: 'bg-blue-100', text: 'text-blue-800', label: 'Pendiente' },
-      aprobada: { bg: 'bg-green-100', text: 'text-green-800', label: 'Aprobada' },
-      rechazada: { bg: 'bg-red-100', text: 'text-red-800', label: 'Rechazada' }
-    };
-    return estilos[estado] || { bg: 'bg-gray-100', text: 'text-gray-800', label: estado };
+  // Abrir modal de detalles
+  const abrirDetalles = (solicitud) => {
+    setSolicitudSeleccionada(solicitud);
+    setMostrarDetalles(true);
+  };
+
+  // Abrir modal de observaciones
+  const abrirObservaciones = (solicitud) => {
+    setSolicitudSeleccionada(solicitud);
+    setObservacionesTexto(solicitud.observaciones || '');
+    setMostrarObservaciones(true);
+  };
+
+  // Guardar observaciones
+  const guardarObservaciones = async () => {
+    if (!solicitudSeleccionada) return;
+    try {
+      await api.put(`/solicitudes-ofertas/${solicitudSeleccionada._id}`, { 
+        observaciones: observacionesTexto 
+      });
+      if (window.mostrarNotificacion) {
+        window.mostrarNotificacion('success', '✅ Observaciones guardadas');
+      } else {
+        alert('✅ Observaciones guardadas');
+      }
+      setMostrarObservaciones(false);
+      cargarSolicitudes();
+    } catch (err) {
+      console.error('❌ Error al guardar observaciones:', err);
+      if (window.mostrarNotificacion) {
+        window.mostrarNotificacion('error', 'Error al guardar observaciones');
+      } else {
+        alert('❌ Error: ' + err.message);
+      }
+    }
   };
 
   const formatearFecha = (fecha) => {
@@ -101,11 +153,15 @@ const SolicitudesCoordinador = () => {
   }
 
   if (error) {
+    const usuarioLocal = JSON.parse(localStorage.getItem('usuario') || '{}');
     return (
       <div className="dashboard-content" style={{ textAlign: 'center', padding: '50px' }}>
         <i className="fas fa-exclamation-triangle" style={{ fontSize: '48px', color: '#dc2626' }}></i>
-        <p style={{ marginTop: '15px', color: '#dc2626' }}>{error}</p>
-        <button onClick={cargarSolicitudes} className="btn btn-primary">
+        <p style={{ marginTop: '15px', color: '#dc2626', fontSize: '16px', fontWeight: '600' }}>{error}</p>
+        <p style={{ marginTop: '10px', color: '#666', fontSize: '14px' }}>
+          Tu rol: <strong>{usuarioLocal.rol || 'No identificado'}</strong>
+        </p>
+        <button onClick={cargarSolicitudes} className="btn btn-primary" style={{ marginTop: '15px' }}>
           <i className="fas fa-sync-alt me-2"></i>Reintentar
         </button>
       </div>
@@ -191,15 +247,13 @@ const SolicitudesCoordinador = () => {
               <thead style={{ background: '#f3f4f6' }}>
                 <tr>
                   <th style={{ padding: '15px', textAlign: 'left', fontWeight: '600', color: '#0a3274', borderBottom: '2px solid #e5e7eb' }}>Oferta</th>
-                  <th style={{ padding: '15px', textAlign: 'left', fontWeight: '600', color: '#0a3274', borderBottom: '2px solid #e5e7eb' }}>Instructor</th>
-                  <th style={{ padding: '15px', textAlign: 'left', fontWeight: '600', color: '#0a3274', borderBottom: '2px solid #e5e7eb' }}>Estado</th>
-                  <th style={{ padding: '15px', textAlign: 'left', fontWeight: '600', color: '#0a3274', borderBottom: '2px solid #e5e7eb' }}>Fecha</th>
+                  <th style={{ padding: '15px', textAlign: 'left', fontWeight: '600', color: '#0a3274', borderBottom: '2px solid #e5e7eb' }}>Fecha Creación</th>
+                  <th style={{ padding: '15px', textAlign: 'left', fontWeight: '600', color: '#0a3274', borderBottom: '2px solid #e5e7eb' }}>Observaciones</th>
                   <th style={{ padding: '15px', textAlign: 'center', fontWeight: '600', color: '#0a3274', borderBottom: '2px solid #e5e7eb' }}>Acciones</th>
                 </tr>
               </thead>
               <tbody>
                 {solicitudes.map((sol) => {
-                  const badge = getBadgeEstado(sol.estado);
                   return (
                     <tr key={sol._id} style={{ borderBottom: '1px solid #e5e7eb' }}
                       onMouseEnter={(e) => e.currentTarget.style.background = '#f9fafb'}
@@ -213,79 +267,378 @@ const SolicitudesCoordinador = () => {
                           <i className="fas fa-hashtag me-1"></i>Ficha: {sol.oferta?.codigo_ficha || 'N/A'}
                         </div>
                       </td>
-                      <td style={{ padding: '15px' }}>
-                        <div style={{ fontSize: '14px', color: '#1f2937' }}>
-                          {sol.solicitante?.nombre || sol.solicitante?.username || 'N/A'}
-                        </div>
-                        <div style={{ fontSize: '12px', color: '#6b7280' }}>
-                          {sol.solicitante?.email || ''}
-                        </div>
-                      </td>
-                      <td style={{ padding: '15px' }}>
-                        <span style={{
-                          display: 'inline-block',
-                          padding: '6px 12px',
-                          borderRadius: '15px',
-                          fontSize: '12px',
-                          fontWeight: '600'
-                        }} className={`${badge.bg} ${badge.text}`}>
-                          {badge.label}
-                        </span>
-                      </td>
-                      <td style={{ padding: '15px', fontSize: '14px', color: '#6b7280' }}>
+                      {/* Fecha Creación */}
+                      <td style={{ padding: '15px', fontSize: '14px', color: '#6b7280', whiteSpace: 'nowrap' }}>
+                        <i className="fas fa-calendar me-2" style={{ color: '#0a3274' }}></i>
                         {formatearFecha(sol.createdAt)}
                       </td>
-                      <td style={{ padding: '15px', textAlign: 'center' }}>
-                        {sol.estado === 'revision' || sol.estado === 'pendiente' ? (
-                          <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
-                            <button
-                              onClick={() => aprobarSolicitud(sol._id)}
-                              style={{
-                                background: 'linear-gradient(135deg, #10b981, #059669)',
-                                color: 'white',
-                                border: 'none',
-                                padding: '8px 15px',
-                                borderRadius: '6px',
-                                fontSize: '13px',
-                                fontWeight: '600',
-                                cursor: 'pointer',
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '5px'
-                              }}
-                            >
-                              <i className="fas fa-check"></i> Aprobar
-                            </button>
-                            <button
-                              onClick={() => rechazarSolicitud(sol._id)}
-                              style={{
-                                background: 'linear-gradient(135deg, #ef4444, #dc2626)',
-                                color: 'white',
-                                border: 'none',
-                                padding: '8px 15px',
-                                borderRadius: '6px',
-                                fontSize: '13px',
-                                fontWeight: '600',
-                                cursor: 'pointer',
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '5px'
-                              }}
-                            >
-                              <i className="fas fa-times"></i> Rechazar
-                            </button>
+
+                      {/* Observaciones */}
+                      <td style={{ padding: '15px' }}>
+                        {sol.observaciones ? (
+                          <div style={{
+                            background: '#f0fdf4',
+                            border: '1px solid #86efac',
+                            padding: '10px',
+                            borderRadius: '6px',
+                            fontSize: '13px',
+                            color: '#166534',
+                            maxWidth: '200px',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis'
+                          }}>
+                            <i className="fas fa-check-circle me-1"></i>
+                            {sol.observaciones.substring(0, 50)}...
                           </div>
                         ) : (
-                          <span style={{ fontSize: '12px', color: '#9ca3af' }}>
-                            Procesada
-                          </span>
+                          <div style={{
+                            fontSize: '13px',
+                            color: '#9ca3af',
+                            fontStyle: 'italic'
+                          }}>
+                            Sin observaciones
+                          </div>
                         )}
+                      </td>
+
+                      {/* Acciones */}
+                      <td style={{ padding: '15px', textAlign: 'center' }}>
+                        <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap' }}>
+                          {/* 👁️ Ver Detalles */}
+                          <button
+                            onClick={() => abrirDetalles(sol)}
+                            style={{
+                              background: '#e0e7ff',
+                              color: '#4f46e5',
+                              border: 'none',
+                              width: '36px',
+                              height: '36px',
+                              borderRadius: '6px',
+                              cursor: 'pointer',
+                              fontSize: '16px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              transition: 'all 0.2s'
+                            }}
+                            title="Ver detalles completos"
+                            onMouseEnter={(e) => e.target.style.background = '#c7d2fe'}
+                            onMouseLeave={(e) => e.target.style.background = '#e0e7ff'}
+                          >
+                            👁️
+                          </button>
+
+                          {/* 📝 Agregar Observaciones */}
+                          <button
+                            onClick={() => abrirObservaciones(sol)}
+                            style={{
+                              background: '#fef3c7',
+                              color: '#b45309',
+                              border: 'none',
+                              width: '36px',
+                              height: '36px',
+                              borderRadius: '6px',
+                              cursor: 'pointer',
+                              fontSize: '16px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              transition: 'all 0.2s'
+                            }}
+                            title="Agregar observaciones"
+                            onMouseEnter={(e) => e.target.style.background = '#fde68a'}
+                            onMouseLeave={(e) => e.target.style.background = '#fef3c7'}
+                          >
+                            📝
+                          </button>
+
+                          {/* ✏️ Editar Estado */}
+                          <button
+                            onClick={() => alert('Funcionalidad de editar estado disponible próximamente.')}
+                            style={{
+                              background: '#dbeafe',
+                              color: '#1e40af',
+                              border: 'none',
+                              width: '36px',
+                              height: '36px',
+                              borderRadius: '6px',
+                              cursor: 'pointer',
+                              fontSize: '16px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              transition: 'all 0.2s'
+                            }}
+                            title="Editar/Modificar estado"
+                            onMouseEnter={(e) => e.target.style.background = '#bfdbfe'}
+                            onMouseLeave={(e) => e.target.style.background = '#dbeafe'}
+                          >
+                            ✏️
+                          </button>
+
+                          {/* ✅ Aprobar / ❌ Rechazar */}
+                          {sol.estado === 'revision' || sol.estado === 'pendiente' ? (
+                            <div style={{ display: 'flex', gap: '6px' }}>
+                              <button
+                                onClick={() => aprobarSolicitud(sol._id)}
+                                style={{
+                                  background: '#d1fae5',
+                                  color: '#065f46',
+                                  border: 'none',
+                                  width: '36px',
+                                  height: '36px',
+                                  borderRadius: '6px',
+                                  cursor: 'pointer',
+                                  fontSize: '16px',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  transition: 'all 0.2s'
+                                }}
+                                title="Aprobar solicitud"
+                                onMouseEnter={(e) => e.target.style.background = '#a7f3d0'}
+                                onMouseLeave={(e) => e.target.style.background = '#d1fae5'}
+                              >
+                                ✅
+                              </button>
+                              <button
+                                onClick={() => rechazarSolicitud(sol._id)}
+                                style={{
+                                  background: '#fee2e2',
+                                  color: '#991b1b',
+                                  border: 'none',
+                                  width: '36px',
+                                  height: '36px',
+                                  borderRadius: '6px',
+                                  cursor: 'pointer',
+                                  fontSize: '16px',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  transition: 'all 0.2s'
+                                }}
+                                title="Rechazar solicitud"
+                                onMouseEnter={(e) => e.target.style.background = '#fecaca'}
+                                onMouseLeave={(e) => e.target.style.background = '#fee2e2'}
+                              >
+                                ❌
+                              </button>
+                            </div>
+                          ) : (
+                            <span style={{ fontSize: '12px', color: '#9ca3af', fontStyle: 'italic' }}>
+                              Procesada
+                            </span>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   );
                 })}
               </tbody>
             </table>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Detalles de la Oferta */}
+      {mostrarDetalles && solicitudSeleccionada && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0,0,0,0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }} onClick={() => setMostrarDetalles(false)}>
+          <div style={{
+            background: 'white',
+            borderRadius: '12px',
+            padding: '30px',
+            maxWidth: '600px',
+            maxHeight: '80vh',
+            overflowY: 'auto',
+            boxShadow: '0 10px 40px rgba(0,0,0,0.2)'
+          }} onClick={(e) => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <h3 style={{ margin: 0, fontSize: '20px', fontWeight: '600', color: '#0a3274' }}>
+                📋 Detalles de la Oferta
+              </h3>
+              <button onClick={() => setMostrarDetalles(false)} style={{
+                background: 'none',
+                border: 'none',
+                fontSize: '24px',
+                cursor: 'pointer',
+                color: '#6b7280'
+              }}>
+                ✕
+              </button>
+            </div>
+
+            <div style={{ color: '#1f2937' }}>
+              <div style={{ marginBottom: '20px' }}>
+                <div style={{ fontSize: '12px', color: '#6b7280', textTransform: 'uppercase', fontWeight: '600' }}>
+                  Programa
+                </div>
+                <div style={{ fontSize: '16px', fontWeight: '600', color: '#0a3274', marginTop: '5px' }}>
+                  {solicitudSeleccionada.oferta?.programa?.nombre || 'N/A'}
+                </div>
+              </div>
+
+              <div style={{ marginBottom: '20px' }}>
+                <div style={{ fontSize: '12px', color: '#6b7280', textTransform: 'uppercase', fontWeight: '600' }}>
+                  Código de Ficha
+                </div>
+                <div style={{ fontSize: '14px', marginTop: '5px' }}>
+                  {solicitudSeleccionada.oferta?.codigo_ficha || 'N/A'}
+                </div>
+              </div>
+
+              <div style={{ marginBottom: '20px' }}>
+                <div style={{ fontSize: '12px', color: '#6b7280', textTransform: 'uppercase', fontWeight: '600' }}>
+                  Cupo
+                </div>
+                <div style={{ fontSize: '14px', marginTop: '5px' }}>
+                  {solicitudSeleccionada.oferta?.cupo || 'N/A'} aprendices
+                </div>
+              </div>
+
+              <div style={{ marginBottom: '20px' }}>
+                <div style={{ fontSize: '12px', color: '#6b7280', textTransform: 'uppercase', fontWeight: '600' }}>
+                  Modalidad
+                </div>
+                <div style={{ fontSize: '14px', marginTop: '5px' }}>
+                  {solicitudSeleccionada.oferta?.modalidad_oferta || 'N/A'}
+                </div>
+              </div>
+
+              <div style={{ marginBottom: '20px' }}>
+                <div style={{ fontSize: '12px', color: '#6b7280', textTransform: 'uppercase', fontWeight: '600' }}>
+                  Fechas
+                </div>
+                <div style={{ fontSize: '14px', marginTop: '5px' }}>
+                  <div>Inscripción: {formatearFecha(solicitudSeleccionada.oferta?.fecha_inscripcion)}</div>
+                  <div>Inicio: {formatearFecha(solicitudSeleccionada.oferta?.fecha_inicio)}</div>
+                  <div>Terminación: {formatearFecha(solicitudSeleccionada.oferta?.fecha_terminacion)}</div>
+                </div>
+              </div>
+
+              <div style={{ marginBottom: '20px' }}>
+                <div style={{ fontSize: '12px', color: '#6b7280', textTransform: 'uppercase', fontWeight: '600' }}>
+                  Instructor
+                </div>
+                <div style={{ fontSize: '14px', marginTop: '5px' }}>
+                  <div><strong>{solicitudSeleccionada.solicitante?.nombre || 'N/A'}</strong></div>
+                  <div>{solicitudSeleccionada.solicitante?.email}</div>
+                </div>
+              </div>
+
+              <button onClick={() => setMostrarDetalles(false)} style={{
+                background: 'linear-gradient(135deg, #0a3274, #1e40af)',
+                color: 'white',
+                border: 'none',
+                padding: '12px 24px',
+                borderRadius: '6px',
+                fontSize: '14px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                width: '100%',
+                marginTop: '20px'
+              }}>
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Agregar Observaciones */}
+      {mostrarObservaciones && solicitudSeleccionada && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0,0,0,0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }} onClick={() => setMostrarObservaciones(false)}>
+          <div style={{
+            background: 'white',
+            borderRadius: '12px',
+            padding: '30px',
+            maxWidth: '500px',
+            boxShadow: '0 10px 40px rgba(0,0,0,0.2)'
+          }} onClick={(e) => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <h3 style={{ margin: 0, fontSize: '20px', fontWeight: '600', color: '#0a3274' }}>
+                📝 Agregar Observaciones
+              </h3>
+              <button onClick={() => setMostrarObservaciones(false)} style={{
+                background: 'none',
+                border: 'none',
+                fontSize: '24px',
+                cursor: 'pointer',
+                color: '#6b7280'
+              }}>
+                ✕
+              </button>
+            </div>
+
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: '#1f2937', marginBottom: '10px' }}>
+                Observaciones:
+              </label>
+              <textarea
+                value={observacionesTexto}
+                onChange={(e) => setObservacionesTexto(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  border: '2px solid #e5e7eb',
+                  borderRadius: '6px',
+                  fontSize: '14px',
+                  fontFamily: 'Arial, sans-serif',
+                  minHeight: '120px',
+                  resize: 'vertical',
+                  boxSizing: 'border-box'
+                }}
+                placeholder="Escribe tus observaciones aquí..."
+              />
+            </div>
+
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+              <button onClick={() => setMostrarObservaciones(false)} style={{
+                background: '#e5e7eb',
+                color: '#1f2937',
+                border: 'none',
+                padding: '10px 20px',
+                borderRadius: '6px',
+                fontSize: '14px',
+                fontWeight: '600',
+                cursor: 'pointer'
+              }}>
+                Cancelar
+              </button>
+              <button onClick={guardarObservaciones} style={{
+                background: 'linear-gradient(135deg, #10b981, #059669)',
+                color: 'white',
+                border: 'none',
+                padding: '10px 20px',
+                borderRadius: '6px',
+                fontSize: '14px',
+                fontWeight: '600',
+                cursor: 'pointer'
+              }}>
+                💾 Guardar
+              </button>
+            </div>
           </div>
         </div>
       )}

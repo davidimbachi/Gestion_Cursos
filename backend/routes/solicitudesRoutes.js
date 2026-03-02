@@ -3,12 +3,19 @@ import {
   listarMisSolicitudesOfertas,
   listarSolicitudesOfertasCoordinador,
   aprobarSolicitudOferta,
-  rechazarSolicitudOferta
+  rechazarSolicitudOferta,
+  listarSolicitudesPendientes,
+  aprobarSolicitud,
+  rechazarSolicitud,
+  actualizarSolicitud
 } from "../controllers/solicitudController.js";
 
 import checkAuth from "../middleware/checkAuth.js";
 import checkInstructor from "../middleware/checkInstructor.js";
 import esCoordinador from "../middleware/esCoordinador.js";
+import esAdmin from "../middleware/esAdmin.js";
+
+
 
 const router = express.Router();
 
@@ -21,5 +28,11 @@ router.get("/mis-ofertas", checkAuth, checkInstructor, listarMisSolicitudesOfert
 router.get("/coordinador", checkAuth, esCoordinador, listarSolicitudesOfertasCoordinador);
 router.put("/:id/aprobar", checkAuth, esCoordinador, aprobarSolicitudOferta);
 router.put("/:id/rechazar", checkAuth, esCoordinador, rechazarSolicitudOferta);
+router.put("/:id", checkAuth, esCoordinador, actualizarSolicitud);
+
+// Admin
+router.get("/", checkAuth, esAdmin, listarSolicitudesPendientes);
+router.put("/aprobar/:id", checkAuth, esAdmin, aprobarSolicitud);
+router.put("/rechazar/:id", checkAuth, esAdmin, rechazarSolicitud);
 
 export default router;

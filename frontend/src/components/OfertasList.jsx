@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { listarOfertas } from '../services/api';
+import api from '../services/api';
 
 const OfertasList = () => {
   const [ofertas, setOfertas] = useState([]);
@@ -40,7 +41,8 @@ const OfertasList = () => {
   const handleEnviarOferta = async () => {
     if (!ofertaSeleccionada) return;
     
-    if (!confirm('¿Estás seguro de enviar esta oferta a revisión del coordinador?\n\nUna vez enviada, no podrás editarla.')) {
+    // eslint-disable-next-line no-restricted-globals
+    if (!window.confirm('¿Estás seguro de enviar esta oferta a revisión del coordinador?\n\nUna vez enviada, no podrás editarla.')) {
       return;
     }
     
@@ -93,10 +95,6 @@ const OfertasList = () => {
     });
   };
 
-  const formatearFechaCorta = (fecha) => {
-    if (!fecha) return '';
-    return new Date(fecha).toLocaleDateString('es-CO');
-  };
 
   // === FUNCIONES DE EDICIÓN ===
   const abrirEdicion = (oferta) => {
@@ -137,23 +135,11 @@ const OfertasList = () => {
     console.log('🔴 [DEBUG] formData:', formData);
     try {
       setGuardando(true);
-      const url = `http://localhost:4000/api/ofertas/${ofertaEditando._id}`;
-      console.log('📤 [FETCH] Enviando petición PUT a:', url);
-      console.log('📤 [FETCH] Body:', JSON.stringify(formData, null, 2));
-      const response = await fetch(url, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-      console.log('📥 [RESPONSE] Status:', response.status, response.statusText);
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        console.error('❌ [RESPONSE] Error en la respuesta:', errorData);
-        throw new Error(`Error ${response.status}: ${response.statusText}`);
-      }
-      const ofertaActualizada = await response.json();
+      // use shared axios instance which already attaches token
+      console.log('📤 [AXIOS] PUT /ofertas/' + ofertaEditando._id, formData);
+      const respuesta = await api.put(`/ofertas/${ofertaEditando._id}`, formData);
+      const ofertaActualizada = respuesta.data;
+      console.log('📥 [AXIOS] Response data:', ofertaActualizada);
       console.log('✅ [RESPONSE] Oferta actualizada recibida:', ofertaActualizada);
       setOfertas(ofertas.map(o => o._id === ofertaActualizada._id ? ofertaActualizada : o));
       if (ofertaSeleccionada?._id === ofertaActualizada._id) {
@@ -168,10 +154,11 @@ const OfertasList = () => {
     } catch (error) {
       console.error('❌ [ERROR] Error completo:', error);
       console.error('❌ [ERROR] Stack:', error.stack);
+      const mensaje = error.response?.data?.msg || error.message || 'Error desconocido';
       if (window.mostrarNotificacion) {
-        window.mostrarNotificacion('error', `❌ Error al guardar cambios: ${error.message}`);
+        window.mostrarNotificacion('error', `❌ Error al guardar cambios: ${mensaje}`);
       } else {
-        alert(`❌ Error al guardar cambios: ${error.message}`);
+        alert(`❌ Error al guardar cambios: ${mensaje}`);
       }
     } finally {
       setGuardando(false);

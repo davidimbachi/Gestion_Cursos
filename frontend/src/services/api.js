@@ -52,9 +52,9 @@ export const enviarOferta = async (id) => {
 };
 
 // 🔹 Listar solicitudes del instructor (ofertas YA enviadas)
-// ahora coincide con las rutas definidas en el servidor (/api/solicitudes)
+// coincide con el prefijo utilizado en el servidor (/api/solicitudes-ofertas)
 export const listarSolicitudesInstructor = async () => {
-  const respuesta = await api.get('/solicitudes/mis-ofertas');
+  const respuesta = await api.get('/solicitudes-ofertas/mis-ofertas');
   return respuesta.data;
 };
 

@@ -25,26 +25,15 @@ app.use(cors({
 
 app.use(express.json());
 
-// Middleware para simular usuario con rol
-// Routing
+// Rutas
 app.use("/api/usuarios", usuariosRoutes);
 app.use('/api/solicitudes-ofertas', solicitudesRoutes);
-app.use("/uploads", express.static("uploads")); // Servir archivos estáticos
-
-app.use(async (req, res, next) => {
-  const usuario = await Usuario.findOne({ email: "wendy@gmail.com" }).populate('rol');
-  console.log('✅ Usuario cargado:', usuario?.email);
-  console.log('✅ Rol cargado:', usuario?.rol);
-  req.usuario = usuario;
-  next();
-});
-
-// Rutas
 app.use("/api/ofertas",    ofertasRoutes);
 app.use("/api/programas",  programaRoutes);
 app.use("/api/ubicacion",  ubicacionRoutes);
 app.use("/api/empresas",   empresaRoutes);
 app.use("/api/catalogos",  catalogosRoutes);
+app.use("/uploads", express.static("uploads")); // Servir archivos estáticos
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {

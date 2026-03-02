@@ -64,7 +64,8 @@ const menusPorRol = {
     {
       category: "Gestión",
       links: [
-        { url: "/solicitudes", icon: "fas fa-inbox", label: "Solicitudes" },
+        // use a dedicated path for coordinators so they hit the correct component
+        { url: "/coordinador/solicitudes", icon: "fas fa-inbox", label: "Solicitudes" },
         { url: "/instructores", icon: "fas fa-chalkboard-teacher", label: "Instructores" }
       ]
     }
@@ -180,15 +181,21 @@ function App() {
           </MainLayout>
         }/>
         
+        {/* general "solicitudes" route will redirect based on role */}
         <Route path="/solicitudes" element={
-        <MainLayout 
-          user={usuarioData} 
-          grupoNombre={usuarioData.rol}
-          sidebarMenus={menuCompleto}
-        >
-          <SolicitudesInstructor />
-        </MainLayout>
-      }/>
+          // redirect coordinadores automatically, otherwise show instructor view
+          usuarioData.rol === 'Coordinador' ? (
+            <Navigate to="/coordinador/solicitudes" replace />
+          ) : (
+            <MainLayout 
+              user={usuarioData} 
+              grupoNombre={usuarioData.rol}
+              sidebarMenus={menuCompleto}
+            >
+              <SolicitudesInstructor />
+            </MainLayout>
+          )
+        }/>
 
       <Route path="/coordinador/solicitudes" element={
       <MainLayout 

@@ -50,6 +50,16 @@ const solicitudSchema = new Schema(
       ref: "Usuario",
       default: null,
     },
+
+    observaciones: {
+      type: String,
+      default: null,
+    },
+
+    motivoRechazo: {
+      type: String,
+      default: null,
+    },
   },
   {
     timestamps: {

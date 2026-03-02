@@ -229,6 +229,40 @@ const rechazarSolicitudOferta = async (req, res) => {
 };
 
 /**
+ * 👨‍💼 Coordinador: Actualizar observaciones de una solicitud
+ */
+const actualizarSolicitud = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { observaciones } = req.body;
+    
+    const solicitud = await Solicitud.findById(id);
+    
+    if (!solicitud) {
+      return res.status(404).json({ msg: "Solicitud no encontrada" });
+    }
+    
+    if (observaciones !== undefined) {
+      solicitud.observaciones = observaciones;
+      solicitud.usuarioUltimoCambio = req.usuario._id;
+    }
+    
+    await solicitud.save();
+    
+    res.json({ 
+      msg: "✅ Solicitud actualizada correctamente", 
+      solicitud 
+    });
+  } catch (error) {
+    console.error('❌ Error en actualizarSolicitud:', error);
+    res.status(500).json({ 
+      msg: "Error al actualizar solicitud", 
+      error: error.message 
+    });
+  }
+};
+
+/**
  * ==========================================
  *  EXPORTACIONES (ÚNICO BLOQUE AL FINAL)
  * ==========================================
@@ -243,5 +277,6 @@ export {
   listarMisSolicitudesOfertas,
   listarSolicitudesOfertasCoordinador,
   aprobarSolicitudOferta,
-  rechazarSolicitudOferta
+  rechazarSolicitudOferta,
+  actualizarSolicitud
 };

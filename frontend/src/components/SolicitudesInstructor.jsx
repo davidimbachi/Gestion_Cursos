@@ -1,14 +1,29 @@
+/* eslint-disable no-restricted-globals */
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 
 const SolicitudesInstructor = () => {
   const [solicitudes, setSolicitudes] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
+    const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+    if (usuario.rol?.toLowerCase() !== 'instructor') {
+      // si no es instructor, redirigir a su sección correspondiente
+      console.warn('No autorizado para ver esta página. rol actual:', usuario.rol);
+      if (usuario.rol?.toLowerCase() === 'coordinador') {
+        // coordinadores tienen su propio panel de solicitudes
+        navigate('/coordinador/solicitudes');
+      } else {
+        navigate('/inicio');
+      }
+      return;
+    }
     cargarSolicitudes();
-  }, []);
+  }, [navigate]);
 
   const cargarSolicitudes = async () => {
     try {
@@ -85,6 +100,9 @@ const SolicitudesInstructor = () => {
         <button onClick={cargarSolicitudes} className="btn btn-primary">
           <i className="fas fa-sync-alt me-2"></i>Reintentar
         </button>
+      <p style={{ marginTop: '10px', color: '#666', fontSize: '14px' }}>
+        Si ves este mensaje siendo coordinador, utiliza la ruta "Coordinador → Solicitudes" en el menú.
+      </p>
       </div>
     );
   }
