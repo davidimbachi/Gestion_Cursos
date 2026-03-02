@@ -16,5 +16,6 @@ const router = express.Router();
 router.post("/", checkAuth, checkInstructor, crearOferta);
 router.get("/",  checkAuth, listarOfertas);
 router.put("/:id", checkAuth, checkInstructor, actualizarOferta);
+router.get("/ofertas/:id/ficha", descargarFicha);
 
 export default router;

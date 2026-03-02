@@ -104,7 +104,22 @@ const crearOferta = async (req, res) => {
     datos.usuario = req.usuario._id;
     const nuevaOferta = new Oferta(datos);
     await nuevaOferta.save();
-    res.json(nuevaOferta);
+
+    //Creo la ficha de caracterización
+    try {
+      const rutaRelativa = await generarFicha(
+        nuevaOferta._id,
+        req.usuario._id
+      );
+
+      nuevaOferta.caracterizacion_generada = rutaRelativa;
+      await nuevaOferta.save();
+
+    } catch (err) {
+      console.error("Error generando ficha:", err);
+    }
+
+
 
   } catch (error) {
     console.error(error);
@@ -116,7 +131,7 @@ const crearOferta = async (req, res) => {
 // Listar ofertas ----------------------------------
 const listarOfertas = async (req, res) => {
   try {
-    // ✅ Verificar que haya un usuario autenticado
+    // Verificar que haya un usuario autenticado
     if (!req.usuario) {
       return res.status(401).json({ msg: "No autorizado" });
     }
@@ -179,14 +194,14 @@ const enviarOferta = async (req, res) => {
       return res.status(400).json({ msg: "Esta oferta ya fue enviada" });
     }
     
-    // ✅ Actualizar estado de la oferta
+    // Actualizar estado de la oferta
     oferta.estado_enviada = true;
     await oferta.save();
     
-    // ✅ Crear solicitud CON LOS CAMPOS CORRECTOS del modelo
+    // Crear solicitud CON LOS CAMPOS CORRECTOS del modelo
     const nuevaSolicitud = new Solicitud({
       oferta: oferta._id,
-      solicitante: req.usuario._id,  // ✅ Campo correcto
+      solicitante: req.usuario._id,  //  Campo correcto
       coordinador: req.usuario.coordinadorAsignado || null,
       estado: 'revision',
       fechaUltimoCambio: Date.now(),
@@ -195,7 +210,7 @@ const enviarOferta = async (req, res) => {
     
     await nuevaSolicitud.save();
     
-    // ✅ Poblar para devolver datos útiles al frontend
+    //  Poblar para devolver datos útiles al frontend
     await nuevaSolicitud.populate({
       path: 'oferta',
       populate: [
@@ -205,13 +220,13 @@ const enviarOferta = async (req, res) => {
     });
     
     res.json({ 
-      msg: "✅ Oferta enviada a revisión", 
+      msg: "Oferta enviada a revisión",
       oferta,
       solicitud: nuevaSolicitud 
     });
     
   } catch (error) {
-    console.error('❌ ERROR en enviarOferta:', error.message);
+    console.error('ERROR en enviarOferta:', error.message);
     res.status(500).json({ msg: "Error al enviar la oferta", error: error.message });
   }
 };
@@ -255,5 +270,5 @@ export const actualizarOferta = async (req, res) => {
 };
 
 
-// ✅ EXPORTACIONES
+// EXPORTACIONES
 export { crearOferta, listarOfertas, enviarOferta };
