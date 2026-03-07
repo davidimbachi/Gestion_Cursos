@@ -105,6 +105,7 @@ const SolicitudesCoordinador = () => {
 
   // Abrir modal de observaciones
   const abrirObservaciones = (solicitud) => {
+    console.log('Abriendo modal de observaciones para:', solicitud._id);
     setSolicitudSeleccionada(solicitud);
     setObservacionesTexto(solicitud.observaciones || '');
     setMostrarObservaciones(true);
@@ -112,10 +113,14 @@ const SolicitudesCoordinador = () => {
 
   // Guardar observaciones
   const guardarObservaciones = async () => {
-    if (!solicitudSeleccionada) return;
+    console.log('Guardando observaciones:', observacionesTexto);
+    if (!solicitudSeleccionada) {
+      console.error('No hay solicitud seleccionada');
+      return;
+    }
     try {
-      await api.put(`/solicitudes-ofertas/${solicitudSeleccionada._id}`, { 
-        observaciones: observacionesTexto 
+      await api.put(`/solicitudes-ofertas/${solicitudSeleccionada._id}`, {
+        observaciones: observacionesTexto
       });
       if (window.mostrarNotificacion) {
         window.mostrarNotificacion('success', '✅ Observaciones guardadas');

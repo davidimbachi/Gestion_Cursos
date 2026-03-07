@@ -114,6 +114,32 @@ const listarMisSolicitudesOfertas = async (req, res) => {
   }
 };
 
+// 👨‍🏫 Instructor: obtener una solicitud por ID (para refrescar comentarios, etc.)
+const obtenerSolicitud = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const solicitud = await Solicitud.findOne({ _id: id, solicitante: req.usuario._id })
+      .populate({
+        path: 'oferta',
+        populate: [
+          { path: 'programa', select: 'nombre codigo version' },
+          { path: 'lugar', select: 'ambiente direccion' },
+          { path: 'usuario', select: 'nombre email username' }
+        ]
+      })
+      .populate('coordinador', 'nombre email');
+
+    if (!solicitud) {
+      return res.status(404).json({ msg: 'Solicitud no encontrada' });
+    }
+
+    res.json(solicitud);
+  } catch (error) {
+    console.error('❌ Error en obtenerSolicitud:', error);
+    res.status(500).json({ msg: 'Error al obtener la solicitud', error: error.message });
+  }
+};
+
 /**
  * 👨‍💼 Coordinador: Listar TODAS las solicitudes de ofertas
  */
@@ -275,6 +301,7 @@ export {
   
   // Solicitudes de Ofertas (Instructor/Coordinador)
   listarMisSolicitudesOfertas,
+  obtenerSolicitud,
   listarSolicitudesOfertasCoordinador,
   aprobarSolicitudOferta,
   rechazarSolicitudOferta,

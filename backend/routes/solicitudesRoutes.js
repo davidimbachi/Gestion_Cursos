@@ -1,6 +1,7 @@
 import express from "express";
 import {
   listarMisSolicitudesOfertas,
+  obtenerSolicitud,
   listarSolicitudesOfertasCoordinador,
   aprobarSolicitudOferta,
   rechazarSolicitudOferta,
@@ -34,5 +35,8 @@ router.put("/:id", checkAuth, esCoordinador, actualizarSolicitud);
 router.get("/", checkAuth, esAdmin, listarSolicitudesPendientes);
 router.put("/aprobar/:id", checkAuth, esAdmin, aprobarSolicitud);
 router.put("/rechazar/:id", checkAuth, esAdmin, rechazarSolicitud);
+
+// Instructor: obtener una sola solicitud (para actualizar comentarios) - VA ÚLTIMO
+router.get("/:id", checkAuth, checkInstructor, obtenerSolicitud);
 
 export default router;
